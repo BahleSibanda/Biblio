@@ -28,7 +28,9 @@ function renderBooks(container, books) {
   }
 
   books.forEach((b) => {
-    const cover = b.cover || "https://via.placeholder.com/128x192/FFE8C5/000000?text=No+Cover";
+    const cover =
+      b.cover ||
+      "https://via.placeholder.com/128x192/FFE8C5/000000?text=No+Cover";
     const title = b.title || "Untitled";
     const author = b.author || "Unknown Author";
     const published = b.published ? `(${b.published})` : "";
@@ -44,19 +46,22 @@ function renderBooks(container, books) {
     container.appendChild(card);
   });
 
-  // Animate new cards with GSAP
-  gsap.from(container.querySelectorAll(".book-card"), {
-    duration: 0.6,
-    y: 20,
-    opacity: 0,
-    stagger: 0.1,
-    ease: "power2.out",
-  });
+  // Animate new cards with GSAP safely
+  if (window.gsap) {
+    gsap.from(container.querySelectorAll(".book-card"), {
+      duration: 0.6,
+      y: 20,
+      opacity: 0,
+      stagger: 0.1,
+      ease: "power2.out",
+    });
+  }
 }
 
 // ================= HOME PAGE: HOTTEST BOOKS =================
 async function loadHottestBooks() {
   if (!hottestSection) return;
+  console.log("🔥 Loading hottest books...");
   hottestSection.innerHTML = "<p class='muted'>Loading hottest books...</p>";
 
   try {
@@ -84,21 +89,34 @@ async function loadHottestBooks() {
 
     renderBooks(hottestSection, filtered);
   } catch (err) {
-    console.error(err);
-    hottestSection.innerHTML = "<p class='muted'>Error loading hottest books.</p>";
+    console.warn("Google Books failed for hottest. Trying Open Library...");
+    hottestSection.innerHTML = "<p class='muted'>Using backup source...</p>";
+    // fallback to Open Library
+    const res = await fetch("https://openlibrary.org/subjects/fiction.json?limit=8");
+    const data = await res.json();
+    const books = data.works.map((b) => ({
+      title: b.title,
+      author: b.authors?.map((a) => a.name).join(", "),
+      cover: b.cover_id ? `https://covers.openlibrary.org/b/id/${b.cover_id}-L.jpg` : null,
+      published: b.first_publish_year,
+    }));
+    renderBooks(hottestSection, books);
   }
 }
 
 // ================= DISCOVER PAGE: NEWEST BOOKS =================
 async function loadNewestBooks() {
   if (!newestSection) return;
+  console.log("📚 Loading newest books...");
   newestSection.innerHTML = "<p class='muted'>Loading newest books...</p>";
 
   try {
     const res = await fetch(`${GOOGLE_BASE}?q=subject:fiction&orderBy=newest&maxResults=12`);
     const data = await res.json();
 
-    const books = (data.items || []).map((i) => ({
+    if (!data.items) throw new Error("No Google Books found");
+
+    const books = data.items.map((i) => ({
       title: i.volumeInfo.title,
       author: i.volumeInfo.authors ? i.volumeInfo.authors.join(", ") : "Unknown",
       cover: i.volumeInfo.imageLinks?.thumbnail,
@@ -107,8 +125,21 @@ async function loadNewestBooks() {
 
     renderBooks(newestSection, books);
   } catch (err) {
-    newestSection.innerHTML = "<p class='muted'>Failed to load newest books.</p>";
-    console.error(err);
+    console.warn("Google Books failed for newest. Trying Open Library...");
+    // fallback to Open Library
+    try {
+      const res = await fetch("https://openlibrary.org/subjects/fiction.json?limit=12");
+      const data = await res.json();
+      const books = data.works.map((b) => ({
+        title: b.title,
+        author: b.authors?.map((a) => a.name).join(", "),
+        cover: b.cover_id ? `https://covers.openlibrary.org/b/id/${b.cover_id}-L.jpg` : null,
+        published: b.first_publish_year,
+      }));
+      renderBooks(newestSection, books);
+    } catch (e) {
+      newestSection.innerHTML = "<p class='muted'>Error loading newest books.</p>";
+    }
   }
 }
 
@@ -128,8 +159,7 @@ async function searchGoogleBooks(query) {
 
     renderBooks(searchResults, books);
     return true;
-  } catch (e) {
-    console.error("Google Books failed", e);
+  } catch {
     return false;
   }
 }
@@ -145,32 +175,32 @@ async function searchOpenLibrary(query) {
       published: i.first_publish_year,
     }));
     renderBooks(searchResults, books);
-  } catch (e) {
-    searchResults.innerHTML = "<p class='muted'>Open Library search failed.</p>";
+  } catch {
+    searchResults.innerHTML = "<p class='muted'>Search failed.</p>";
   }
 }
 
-// Main search handler
+// --- Main search handler ---
 async function handleSearch() {
   const query = searchInput?.value.trim();
   if (!query) return;
   searchResults.innerHTML = "<p class='muted'>Searching...</p>";
-
   const found = await searchGoogleBooks(query);
   if (!found) await searchOpenLibrary(query);
 }
 
-// Event listeners
-searchInput?.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") handleSearch();
-});
+// --- Event Listeners ---
+if (searchInput) {
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSearch();
+  });
+}
 
-// ================= PAGE INITIALIZERS =================
+// ================= INITIALIZATION =================
 window.addEventListener("DOMContentLoaded", () => {
-  loadNewestBooks();
-  loadHottestBooks();
+  console.log("🚀 Script initialized");
+  if (newestSection) loadNewestBooks();
+  if (hottestSection) loadHottestBooks();
 });
 
-// ================= AUTH HANDLERS (same as before) =================
-// (Keep your sign-up/sign-in code unchanged below if needed)
 
