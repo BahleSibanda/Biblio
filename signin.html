@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblio — Join the Community</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body class="auth-body">
+  <div class="auth-wrapper">
+    <div class="auth-image">
+      <div class="overlay">
+        <h1 class="brand">📚 Biblio</h1>
+        <p>Join readers around the world. Discover, rate and share your favorite books.</p>
+      </div>
+    </div>
+
+    <div class="auth-form-container" id="auth-container">
+      <!-- Sign In -->
+      <form id="signin-form" class="auth-form active">
+        <h2>Welcome Back</h2>
+        <p class="muted">Log in to continue your story</p>
+        <input type="email" id="signin-email" placeholder="Email" required />
+        <input type="password" id="signin-password" placeholder="Password" required />
+        <button type="submit" class="btn wide">Sign In</button>
+        <p class="muted small">Don't have an account? <a href="#" id="to-signup">Sign up</a></p>
+      </form>
+
+      <!-- Sign Up -->
+      <form id="signup-form" class="auth-form">
+        <h2>Create Account</h2>
+        <p class="muted">Join the Biblio community today</p>
+        <input type="text" id="signup-name" placeholder="Full Name" required />
+        <input type="email" id="signup-email" placeholder="Email" required />
+        <input type="password" id="signup-password" placeholder="Password" required />
+        <button type="submit" class="btn wide">Sign Up</button>
+        <p class="muted small">Already a member? <a href="#" id="to-signin">Sign in</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
