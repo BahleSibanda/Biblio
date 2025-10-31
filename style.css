@@ -358,13 +358,16 @@ h1, h2, h3, h4, h5 {
   transform: translateX(40px);
   transition: all 0.5s ease;
   position: absolute;
+  pointer-events: none; /* inactive form cannot block clicks */
 }
 
 .auth-form.active {
   opacity: 1;
   transform: translateX(0);
   position: relative;
+  pointer-events: auto; /* active form accepts typing */
 }
+
 
 .auth-form h2 {
   color: #143035;
