@@ -10,6 +10,22 @@ const hottestSection = document.getElementById("hottest-books");
 const GOOGLE_BASE = "https://www.googleapis.com/books/v1/volumes";
 const OPENLIB_BASE = "https://openlibrary.org/search.json";
 
+// ========== ACCESS CONTROL HELPERS ==========
+
+// Check if user is logged in
+function isLoggedIn() {
+  return !!localStorage.getItem("currentUser");
+}
+
+// Restrict access to certain pages
+function requireLogin(redirectPage = "signin.html") {
+  if (!isLoggedIn()) {
+    alert("You need to sign in to access this page.");
+    window.location.href = redirectPage;
+  }
+}
+
+
 // --- Utility: Create element ---
 function el(html) {
   const template = document.createElement("template");

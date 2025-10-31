@@ -8,16 +8,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 
+  <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script defer src="script.js"></script>
+  <script src="auth.js" defer></script>
+
 </head>
 
 <body>
   <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">📚</div>
+      </div>
+
+      <nav class="side-icons">
+        <button class="icon-btn" onclick="location.href='index.html'">🏠</button>
+        <button class="icon-btn active" onclick="location.href='discover.html'">🔍</button>
+        <button class="icon-btn" onclick="location.href='bookclubs.html'">📖</button>
+        <button class="icon-btn" disabled>🔔</button>
+
+        <button id="profile-btn" class="icon-btn">👤</button>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
     <main class="main-content">
 
       <header class="top-nav">
         <h1 class="brand">Biblio</h1>
+
         <div class="nav-right">
           <input id="search-input" placeholder="Search for books..." class="search">
           <button id="search-btn" class="btn">Search</button>
@@ -36,5 +58,19 @@
 
     </main>
   </div>
+
+  <script>
+    // ✅ Substack-style Profile Button
+    const profileBtn = document.getElementById("profile-btn");
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (!currentUser) {
+      profileBtn.onclick = () => location.href = "signin.html";
+    } else {
+      profileBtn.onclick = () => location.href = "profile.html";
+    }
+  </script>
+
 </body>
 </html>
+

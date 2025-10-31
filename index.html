@@ -8,78 +8,102 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&family=Crimson+Pro:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- GSAP (single include) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
+  <script src="auth.js" defer></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
+
 <body>
   <div class="app">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar" aria-label="Main navigation">
       <div class="logo">
         <div class="logo-icon">📚</div>
       </div>
+
       <nav class="side-icons">
-        <button class="icon-btn active" aria-label="Home">🏠</button>
+        <button class="icon-btn active" aria-label="Home" onclick="location.href='index.html'">🏠</button>
         <button class="icon-btn" aria-label="Discover" onclick="location.href='discover.html'">🔍</button>
         <button class="icon-btn" aria-label="Bookclubs" onclick="location.href='bookclubs.html'">📖</button>
-        <button class="icon-btn" aria-label="Notifications">🔔</button>
-        <button class="icon-btn" aria-label="Profile" onclick="location.href='profile.html'">👤</button>
+
+        <!-- NOTIFICATIONS placeholder -->
+        <button class="icon-btn" aria-label="Notifications" disabled>🔔</button>
+
+        <!-- DYNAMIC PROFILE BUTTON -->
+        <button id="profile-btn" class="icon-btn" aria-label="Profile">👤</button>
       </nav>
     </aside>
 
-    <main class="main-content" role="main">
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
       <header class="top-nav">
         <div class="nav-left">
           <h1 class="brand">Biblio</h1>
+
           <nav class="top-links" aria-label="Primary">
             <a href="index.html" class="pill active">Home</a>
             <a href="discover.html" class="pill">Discover</a>
             <a href="bookclubs.html" class="pill">Bookclubs</a>
-            <a href="profile.html" class="pill">Following</a>
+            <a id="profile-link" class="pill">Profile</a>
           </nav>
         </div>
 
-        <!-- NOTE: search input id is "search-input" (matches common JS) -->
         <div class="nav-right">
-          <input id="search-input" class="search" placeholder="Search books or authors" aria-label="Search books or authors">
+          <input id="search-input" class="search" placeholder="Search books or authors">
         </div>
       </header>
 
-      <!-- HOTTEST BOOKS SECTION -->
-      <section class="card hottest" aria-labelledby="hottest-title">
-        <h2 id="hottest-title">Hottest Books</h2>
-        <!-- JS will inject hottest book cards here -->
+      <!-- HOTTEST BOOKS -->
+      <section class="card hottest">
+        <h2>Hottest Books</h2>
         <div id="hottest-books" class="discover-results"></div>
       </section>
 
-      <!-- DASHBOARD (left content + right panel) -->
-      <section class="dashboard" aria-label="Dashboard" style="display:flex;gap:2rem;">
-        <div class="content-left" style="flex:1;">
-
+      <!-- DASHBOARD -->
+      <section class="dashboard">
+        <div class="content-left">
           <section class="section card">
             <h2 class="section-title">Latest from Friends</h2>
             <div class="carousel" id="friends-row"></div>
           </section>
-
         </div>
 
-        <aside class="right-panel card" style="width:280px;">
+        <aside class="right-panel card">
           <h3 class="muted">Currently Reading</h3>
-          <div id="current-reading" class="currently-reading">
-            <!-- dynamically filled -->
-          </div>
+          <div id="current-reading" class="currently-reading"></div>
         </aside>
       </section>
 
-      <footer class="app-footer" style="margin-top:2rem;">© Biblio — Built with warmth</footer>
+      <footer class="app-footer">© Biblio — Built with warmth</footer>
+
     </main>
   </div>
 
-  <!-- Your app script should load AFTER DOM is ready and after GSAP -->
-  <!-- If your script runs on DOMContentLoaded you can also add defer instead. -->
-  <script src="script.js"></script>
+  <script>
+    // ✅ Handle Profile Button (Substack-style)
+    const profileBtn = document.getElementById("profile-btn");
+    const profileLink = document.getElementById("profile-link");
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+
+    if (!user) {
+      profileBtn.onclick = () => location.href = "signin.html";
+      profileLink.textContent = "Sign In";
+      profileLink.href = "signin.html";
+    } else {
+      profileBtn.onclick = () => location.href = "profile.html";
+      profileLink.textContent = "Profile";
+      profileLink.href = "profile.html";
+    }
+  </script>
+
+  <script defer src="script.js"></script>
 </body>
 </html>
+

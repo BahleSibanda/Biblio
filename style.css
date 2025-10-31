@@ -315,7 +315,7 @@ h1, h2, h3, h4, h5 {
   background: #FFE8C5;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .auth-image {
@@ -335,6 +335,12 @@ h1, h2, h3, h4, h5 {
   width: 100%;
 }
 
+.brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
 .auth-form-container {
   flex: 1;
   padding: 3rem;
@@ -342,11 +348,12 @@ h1, h2, h3, h4, h5 {
   justify-content: center;
   align-items: center;
   position: relative;
+  overflow: hidden;
 }
 
 .auth-form {
   width: 100%;
-  max-width: 320px;
+  max-width: 330px;
   opacity: 0;
   transform: translateX(40px);
   transition: all 0.5s ease;
@@ -372,6 +379,8 @@ h1, h2, h3, h4, h5 {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  outline: none;
+  transition: 0.3s ease;
 }
 
 .auth-form .btn.wide {
@@ -390,6 +399,17 @@ h1, h2, h3, h4, h5 {
 .auth-form .btn.wide:hover {
   background: #e36b20;
 }
+
+.auth-form p.muted {
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.auth-form input:focus {
+  border-color: #F07E37;
+  box-shadow: 0 0 4px rgba(240, 126, 55, 0.5);
+}
+
 
 /* =========================================
    RESPONSIVE
