@@ -1,20 +1,17 @@
 // =========================
-// BIBLIO AUTH SYSTEM (FINAL)
+// BIBLIO AUTH SYSTEM (FIXED)
 // =========================
 
 // -------------------------
-// ✅ GSAP intro animation
+// ✅ GSAP Intro Animation
 // -------------------------
 window.addEventListener("DOMContentLoaded", () => {
-  if (document.querySelector(".auth-wrapper")) {
-    gsap.from(".auth-wrapper", {
-      opacity: 0,
-      y: 30,
-      duration: 0.8,
-      ease: "power2.out",
-    });
+  const wrapper = document.querySelector(".auth-wrapper");
+  const activeForm = document.querySelector(".auth-form.active");
 
-    gsap.from(".auth-form.active input", {
+  if (wrapper && activeForm) {
+    gsap.from(wrapper, { opacity: 0, y: 30, duration: 0.8, ease: "power2.out" });
+    gsap.from(activeForm.querySelectorAll("input, .btn"), {
       opacity: 0,
       y: 10,
       stagger: 0.1,
@@ -26,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // -------------------------
-// ✅ FORM ELEMENTS
+// ✅ Form Elements
 // -------------------------
 const signInForm = document.getElementById("signin-form");
 const signUpForm = document.getElementById("signup-form");
@@ -34,26 +31,34 @@ const toSignup = document.getElementById("to-signup");
 const toSignin = document.getElementById("to-signin");
 
 // -------------------------
-// ✅ Switch sign-in <-> sign-up
+// ✅ Switch Forms with GSAP
 // -------------------------
 toSignup?.addEventListener("click", (e) => {
   e.preventDefault();
-  gsap.to(signInForm, { opacity: 0, x: -30, duration: 0.3 });
-  setTimeout(() => {
-    signInForm.classList.remove("active");
-    signUpForm.classList.add("active");
-    gsap.from(signUpForm, { opacity: 0, x: 30, duration: 0.4 });
-  }, 300);
+  gsap.to(signInForm, {
+    opacity: 0,
+    x: -30,
+    duration: 0.3,
+    onComplete: () => {
+      signInForm.classList.remove("active");
+      signUpForm.classList.add("active");
+      gsap.from(signUpForm, { opacity: 0, x: 30, duration: 0.4 });
+    },
+  });
 });
 
 toSignin?.addEventListener("click", (e) => {
   e.preventDefault();
-  gsap.to(signUpForm, { opacity: 0, x: 30, duration: 0.3 });
-  setTimeout(() => {
-    signUpForm.classList.remove("active");
-    signInForm.classList.add("active");
-    gsap.from(signInForm, { opacity: 0, x: -30, duration: 0.4 });
-  }, 300);
+  gsap.to(signUpForm, {
+    opacity: 0,
+    x: 30,
+    duration: 0.3,
+    onComplete: () => {
+      signUpForm.classList.remove("active");
+      signInForm.classList.add("active");
+      gsap.from(signInForm, { opacity: 0, x: -30, duration: 0.4 });
+    },
+  });
 });
 
 // -------------------------
@@ -74,10 +79,12 @@ signUpForm?.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const name = document.getElementById("signup-name").value.trim();
-  const email = document.getElementById("signup-email").value.trim();
+  const email = document.getElementById("signup-email").value.trim().toLowerCase();
   const password = document.getElementById("signup-password").value.trim();
 
-  if (!name || !email || !password) return alert("Please fill in all fields.");
+  if (!name || !email || !password) {
+    return alert("Please fill in all fields.");
+  }
 
   const users = getUsers();
 
@@ -89,7 +96,6 @@ signUpForm?.addEventListener("submit", (e) => {
   saveUsers(users);
 
   alert("Account created successfully!");
-
   signUpForm.reset();
   toSignin.click();
 });
@@ -100,7 +106,7 @@ signUpForm?.addEventListener("submit", (e) => {
 signInForm?.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("signin-email").value.trim();
+  const email = document.getElementById("signin-email").value.trim().toLowerCase();
   const password = document.getElementById("signin-password").value.trim();
   const users = getUsers();
 
@@ -108,22 +114,22 @@ signInForm?.addEventListener("submit", (e) => {
 
   if (!user) return alert("Invalid email or password.");
 
+  // Save current user for profile page
   localStorage.setItem("currentUser", JSON.stringify(user));
 
-  // GSAP exit animation
+  // Exit animation
   gsap.to(".auth-wrapper", {
     opacity: 0,
     y: -20,
     duration: 0.6,
-    onComplete: () => (window.location.href = "index.html"),
+    onComplete: () => (window.location.href = "profile.html"),
   });
 });
 
 // -------------------------
-// ✅ LOGOUT (used on profile.html)
+// ✅ LOGOUT (profile.html)
 // -------------------------
 const logoutBtn = document.getElementById("logout-btn");
-
 logoutBtn?.addEventListener("click", () => {
   localStorage.removeItem("currentUser");
   alert("Logged out.");
@@ -134,26 +140,25 @@ logoutBtn?.addEventListener("click", () => {
 // ✅ REQUIRE AUTH (page protection)
 // -------------------------
 function requireAuth() {
-  const user = localStorage.getItem("currentUser");
+  const user = JSON.parse(localStorage.getItem("currentUser"));
   if (!user) {
     alert("Please sign in to access this page.");
     window.location.href = "signin.html";
   }
+  return user;
 }
 
 // -------------------------
-// ✅ UPDATE NAVBAR PROFILE LINK
+// ✅ UPDATE PROFILE NAVBAR LINK
 // -------------------------
 const profileNav = document.getElementById("nav-profile-link");
-
 if (profileNav) {
   const user = JSON.parse(localStorage.getItem("currentUser"));
   if (!user) {
     profileNav.textContent = "Sign In";
     profileNav.href = "signin.html";
   } else {
-    profileNav.textContent = "Profile";
+    profileNav.textContent = `Hi, ${user.name}`;
     profileNav.href = "profile.html";
   }
 }
-

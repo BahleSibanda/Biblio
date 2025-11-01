@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- ✅ AUTH PROTECTION (Step 3) -->
+  <!-- ✅ AUTH PROTECTION -->
   <script>
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!currentUser) {
@@ -43,113 +43,6 @@
           <h1 class="brand">Biblio</h1>
           <nav class="top-links">
             <a href="index.html" class="pill">Home</a>
-            <a href="discover.html" class="pill">Discover</a>
-            <a href="bookclubs.html" class="pill">Bookclubs</a>
-            <a href="profile.html" class="pill active">Profile</a>
-          </nav>
-        </div>
+            <a href="discover.
 
-        <div class="nav-right">
-          <input id="search2" class="search" placeholder="Search books or authors" aria-label="Search">
-          <button id="logout-btn" class="btn small">Log Out</button>
-        </div>
-      </header>
-
-      <!-- ✅ PROFILE HEADER -->
-      <section class="profile-hero card">
-        <div class="banner"></div>
-        <div class="profile-row">
-          <img class="avatar" src="https://via.placeholder.com/80" alt="Avatar">
-          <div class="profile-meta">
-            <h2 id="profile-name">User</h2>
-            <p class="muted" id="profile-info">@username • 0 Followers</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ✅ TABS -->
-      <section class="tabs card">
-        <div class="tab-buttons">
-          <button class="tab active" data-target="tab-profile">Profile</button>
-          <button class="tab" data-target="tab-lists">Lists</button>
-          <button class="tab" data-target="tab-likes">Likes</button>
-          <button class="tab" data-target="tab-reviews">Reviews</button>
-        </div>
-
-        <div class="tab-contents">
-          <!-- PROFILE TAB -->
-          <div id="tab-profile" class="tab-content">
-            <h3>Your Bookshelf</h3>
-            <div class="bookshelf" id="profile-bookshelf"></div>
-          </div>
-
-          <!-- LISTS TAB -->
-          <div id="tab-lists" class="tab-content hidden">
-            <h3>Lists</h3>
-            <p class="muted">Your saved lists will appear here.</p>
-          </div>
-
-          <!-- LIKES TAB -->
-          <div id="tab-likes" class="tab-content hidden">
-            <h3>Likes</h3>
-            <p class="muted">Books you liked will show up here.</p>
-          </div>
-
-          <!-- REVIEWS TAB -->
-          <div id="tab-reviews" class="tab-content hidden">
-            <h3>Reviews</h3>
-            <p class="muted">Your posted reviews will appear here.</p>
-          </div>
-        </div>
-      </section>
-
-      <footer class="app-footer">© Biblio — Built with warmth</footer>
-    </main>
-  </div>
-
-  <!-- ✅ SCRIPTS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="script.js"></script>
-
-  <script>
-    /* ✅ FILL PROFILE WITH USER DATA */
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    if (user) {
-      document.getElementById("profile-name").textContent = user.name;
-      document.getElementById("profile-info").textContent =
-        `@${user.name.toLowerCase().replace(/\s+/g, '')} • 50 Followers`;
-    }
-
-    /* ✅ LOG OUT */
-    document.getElementById("logout-btn")?.addEventListener("click", () => {
-      localStorage.removeItem("currentUser");
-      alert("You have been logged out.");
-      window.location.href = "index.html";
-    });
-
-    /* ✅ GSAP ENTRY ANIMATION */
-    gsap.from(".profile-hero, .tabs", {
-      opacity: 0,
-      y: 30,
-      duration: 0.8,
-      ease: "power2.out",
-      stagger: 0.2
-    });
-
-    /* ✅ TAB SWITCHING */
-    const tabs = document.querySelectorAll(".tab");
-    const contents = document.querySelectorAll(".tab-content");
-
-    tabs.forEach(btn => {
-      btn.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        btn.classList.add("active");
-
-        contents.forEach(c => c.classList.add("hidden"));
-        document.getElementById(btn.dataset.target).classList.remove("hidden");
-      });
-    });
-  </script>
-</body>
-</html>
 
