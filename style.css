@@ -306,112 +306,137 @@ h1, h2, h3, h4, h5 {
   min-height: 100vh;
   background: linear-gradient(135deg, #143035, #74925D);
   overflow: hidden;
+  padding: 2rem;
 }
 
+/* AUTH WRAPPER */
 .auth-wrapper {
   display: flex;
   width: 90%;
   max-width: 900px;
-  background: #FFE8C5;
+  background: #fff7ec;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
+/* LEFT SIDE IMAGE */
 .auth-image {
   flex: 1;
-  background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80') center/cover;
+  background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1000&q=80')
+            center/cover no-repeat;
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  min-height: 500px;
 }
 
 .auth-image .overlay {
-  background: rgba(20, 48, 53, 0.7);
+  background: rgba(20, 48, 53, 0.75);
   color: #FFE8C5;
   text-align: center;
-  padding: 2rem;
+  padding: 2.5rem;
   width: 100%;
+  position: absolute;
+  bottom: 0;
 }
 
-.brand {
-  font-family: 'Playfair Display', serif;
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
+/* RIGHT SIDE FORMS */
 .auth-form-container {
   flex: 1;
-  padding: 3rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 3rem 2.5rem;
   position: relative;
-  overflow: hidden;
 }
 
+/* FORMS — FIXED MISSING TEXT & DISAPPEARING INPUTS */
 .auth-form {
   width: 100%;
-  max-width: 330px;
+  max-width: 340px;
   opacity: 0;
   transform: translateX(40px);
-  transition: all 0.5s ease;
+  transition: opacity 0.45s ease, transform 0.45s ease;
   position: absolute;
-  pointer-events: none; /* inactive form cannot block clicks */
+  top: 0;
+  left: 0;
+  pointer-events: none;
 }
 
 .auth-form.active {
   opacity: 1;
   transform: translateX(0);
   position: relative;
-  pointer-events: auto; /* active form accepts typing */
+  pointer-events: auto;
 }
 
-
+/* HEADERS */
 .auth-form h2 {
   color: #143035;
-  font-family: 'Playfair Display', serif;
-  margin-bottom: 0.2rem;
+  font-family: 'Playfair Display';
+  margin-bottom: 0.6rem;
 }
 
+.auth-form p.muted {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  color: #4a4a4a;
+}
+
+/* INPUTS — FIXED VISIBILITY + BETTER CONTRAST */
 .auth-form input {
   width: 100%;
-  margin: 0.6rem 0;
-  padding: 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  margin: 0.6rem 0 1rem;
+  padding: 0.9rem 0.8rem;
+  border-radius: 10px;
+  border: 2px solid #b7b7b7;
+  background: #fff;
+  color: #143035; /* ✅ Dark green readable text */
   font-size: 1rem;
   outline: none;
+  font-weight: 500;
   transition: 0.3s ease;
 }
 
+/* Better placeholder contrast */
+.auth-form input::placeholder {
+  color: #8a8a8a;
+  opacity: 1;
+}
+
+/* Focus state — CLEAR and VIVID */
+.auth-form input:focus {
+  border-color: #F07E37;
+  box-shadow: 0 0 6px rgba(240, 126, 55, 0.55);
+}
+
+/* SUBMIT BUTTON */
 .auth-form .btn.wide {
   width: 100%;
   background: #F07E37;
   color: white;
   border: none;
-  padding: 0.8rem;
-  border-radius: 10px;
-  font-weight: bold;
-  margin-top: 1rem;
+  padding: 0.9rem;
+  margin-top: 0.8rem;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .auth-form .btn.wide:hover {
   background: #e36b20;
+  transform: translateY(-2px);
 }
 
-.auth-form p.muted {
-  color: #555;
-  margin-bottom: 1rem;
+/* -----------------------------------------------------
+   FIX: LINKS under each form
+----------------------------------------------------- */
+.auth-form p.small a {
+  color: #F07E37;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-.auth-form input:focus {
-  border-color: #F07E37;
-  box-shadow: 0 0 4px rgba(240, 126, 55, 0.5);
-}
+.auth-form p.small a:hover {
+  text-decoration: underline;
 
 
 /* =========================================
@@ -462,6 +487,7 @@ h1, h2, h3, h4, h5 {
 
   .auth-wrapper {
     flex-direction: column;
+    width: 95%;
   }
 
   .auth-image {
@@ -471,6 +497,8 @@ h1, h2, h3, h4, h5 {
   .auth-form-container {
     padding: 2rem;
   }
+
+ 
 }
 
 /* =========================================
