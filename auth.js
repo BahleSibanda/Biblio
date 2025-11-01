@@ -38,6 +38,8 @@ toSignup?.addEventListener("click", (e) => {
 
   signInForm.classList.remove("active");
   signUpForm.classList.add("active");
+
+  gsap.from(signUpForm, { opacity: 0, x: 30, duration: 0.4 });
 });
 
 toSignin?.addEventListener("click", (e) => {
@@ -45,6 +47,8 @@ toSignin?.addEventListener("click", (e) => {
 
   signUpForm.classList.remove("active");
   signInForm.classList.add("active");
+
+  gsap.from(signInForm, { opacity: 0, x: -30, duration: 0.4 });
 });
 
 // -------------------------
