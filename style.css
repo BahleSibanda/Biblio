@@ -357,6 +357,7 @@ h1, h2, h3, h4, h5 {
   top: 0;
   left: 0;
   pointer-events: none;
+  z-index: none;
 }
 
 .auth-form.active {
@@ -364,6 +365,7 @@ h1, h2, h3, h4, h5 {
   transform: translateX(0);
   position: relative;
   pointer-events: auto;
+  z-index: 10;
 }
 
 /* HEADERS */
@@ -396,7 +398,7 @@ h1, h2, h3, h4, h5 {
 
 /* Better placeholder contrast */
 .auth-form input::placeholder {
-  color: #8a8a8a;
+  color: #6f6f6f;
   opacity: 1;
 }
 
