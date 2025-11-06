@@ -1,4 +1,4 @@
-// Enhanced Authentication functionality
+// Authentication functionality
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
@@ -10,18 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (signupForm) {
         signupForm.addEventListener('submit', handleSignup);
     }
-    
-    // Check if user is already logged in (from localStorage)
-    checkAuthState();
 });
-
-function checkAuthState() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIForUser();
-    }
-}
 
 function handleLogin(e) {
     e.preventDefault();
@@ -59,7 +48,9 @@ function handleLogin(e) {
                     closeAllModals();
                     updateUIForUser();
                     // Reload current page to update content
-                    loadPage(currentPage);
+                    if (currentPage === 'profile' || currentPage === 'notifications') {
+                        loadPage(currentPage);
+                    }
                 }, 1500);
             })
             .catch(error => {
@@ -149,45 +140,13 @@ function simulateAPICall(endpoint, data) {
                     username: data.username,
                     name: data.name || data.username,
                     email: data.email,
-                    joinDate: new Date().toISOString()
+                    joinDate: new Date().toISOString(),
+                    followers: 127,
+                    following: 89
                 });
             } else {
                 reject(new Error('Authentication failed'));
             }
         }, 1000);
     });
-}
-
-function updateUIForUser() {
-    const userActions = document.querySelector('.user-actions');
-    if (currentUser) {
-        userActions.innerHTML = `
-            <span style="margin-right: 1rem;">Hello, ${currentUser.name}</span>
-            <button id="logout-btn">LOG OUT</button>
-        `;
-        
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-    } else {
-        userActions.innerHTML = `
-            <button id="login-btn">LOG IN</button>
-            <button id="signup-btn">SIGN UP</button>
-        `;
-        
-        // Re-attach event listeners
-        document.getElementById('login-btn').addEventListener('click', () => openModal('login-modal'));
-        document.getElementById('signup-btn').addEventListener('click', () => openModal('signup-modal'));
-    }
-}
-
-function handleLogout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateUIForUser();
-    loadPage('home');
-}
-
-// Enhanced email validation
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
 }

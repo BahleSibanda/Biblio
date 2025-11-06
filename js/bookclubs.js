@@ -1,15 +1,14 @@
 // Bookclubs page functionality
-document.addEventListener('DOMContentLoaded', function() {
-    if (currentPage === 'bookclubs') {
-        loadBookClubsPage();
-    }
-});
+function initBookclubsPage() {
+    console.log('Initializing bookclubs page');
+    loadBookClubsPage();
+    initBookClubAnimations();
+}
 
 function loadBookClubsPage() {
     loadYourBookClubs();
     loadPopularBookClubs();
     setupBookClubEvents();
-    initBookClubAnimations();
 }
 
 function loadYourBookClubs() {
@@ -23,6 +22,10 @@ function loadYourBookClubs() {
         const clubElement = createBookClubElement(club);
         container.appendChild(clubElement);
     });
+    
+    if (sampleBookClubs.length === 0) {
+        container.innerHTML = '<p>You haven\'t joined any book clubs yet.</p>';
+    }
 }
 
 function loadPopularBookClubs() {
@@ -58,10 +61,33 @@ function createNewBookClub() {
         
         sampleBookClubs.unshift(newClub);
         loadYourBookClubs();
+        loadPopularBookClubs();
         
         // Show success message
-        alert('Book club created successfully!');
+        showBookClubSuccess('Book club created successfully!');
     }
+}
+
+function showBookClubSuccess(message) {
+    // Create a temporary success message
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--orange);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 4px;
+        z-index: 10000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    `;
+    successDiv.textContent = message;
+    document.body.appendChild(successDiv);
+    
+    setTimeout(() => {
+        document.body.removeChild(successDiv);
+    }, 3000);
 }
 
 function initBookClubAnimations() {
@@ -94,4 +120,16 @@ function initBookClubAnimations() {
             delay: i * 0.1
         });
     });
+    
+    // Floating animation for create button
+    const createBtn = document.getElementById('create-bookclub-btn');
+    if (createBtn) {
+        gsap.to(createBtn, {
+            y: -5,
+            duration: 1,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut'
+        });
+    }
 }

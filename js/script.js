@@ -14,6 +14,19 @@ const API_CONFIG = {
     }
 };
 
+// Sample data for fallback
+const sampleBookClubs = [
+    { id: 1, name: "Sci-Fi Enthusiasts", description: "Exploring the vast universe of science fiction literature", members: 42, image: "https://via.placeholder.com/300/143035/FFFFFF?text=Sci-Fi+Club" },
+    { id: 2, name: "Historical Fiction Lovers", description: "Journeying through time with historical novels", members: 38, image: "https://via.placeholder.com/300/4C6145/FFFFFF?text=Historical+Fiction" },
+    { id: 3, name: "Mystery & Thriller Club", description: "Unraveling mysteries one page at a time", members: 56, image: "https://via.placeholder.com/300/312021/FFFFFF?text=Mystery+Club" }
+];
+
+const sampleActivities = [
+    { user: "BookLover23", action: "rated", target: "The Midnight Library", rating: 5, time: "2 hours ago", avatar: "https://via.placeholder.com/40/74925D/FFFFFF?text=BL" },
+    { user: "PageTurner", action: "added", target: "Project Hail Mary", list: "To Be Read", time: "5 hours ago", avatar: "https://via.placeholder.com/40/4C6145/FFFFFF?text=PT" },
+    { user: "LiteraryExplorer", action: "reviewed", target: "Klara and the Sun", time: "1 day ago", avatar: "https://via.placeholder.com/40/143035/FFFFFF?text=LE" }
+];
+
 // DOM Elements
 const homePage = document.getElementById('home-page');
 const pageContent = document.getElementById('page-content');
@@ -25,11 +38,23 @@ const closeModalButtons = document.querySelectorAll('.close-modal');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing app');
     
+    // Check authentication state
+    checkAuthState();
+    
     // Initialize home page immediately
     initHomePage();
     setupEventListeners();
     initAnimations();
 });
+
+// Check authentication state
+function checkAuthState() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUIForUser();
+    }
+}
 
 // Setup event listeners
 function setupEventListeners() {
@@ -258,6 +283,22 @@ async function getTrendingBooks() {
     }
 }
 
+async function getBookDetails(bookId) {
+    try {
+        const response = await fetch(`${API_CONFIG.googleBooks.baseUrl}/${bookId}`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch book details');
+        }
+        
+        const data = await response.json();
+        return transformBookDetails(data);
+    } catch (error) {
+        console.error('Book details error:', error);
+        return null;
+    }
+}
+
 function transformGoogleBooksData(books) {
     return books.map(book => {
         const volumeInfo = book.volumeInfo;
@@ -270,9 +311,29 @@ function transformGoogleBooksData(books) {
             description: volumeInfo.description || 'No description available.',
             publishedDate: volumeInfo.publishedDate,
             pageCount: volumeInfo.pageCount,
-            genres: volumeInfo.categories || []
+            genres: volumeInfo.categories || [],
+            publisher: volumeInfo.publisher,
+            language: volumeInfo.language
         };
     });
+}
+
+function transformBookDetails(book) {
+    const volumeInfo = book.volumeInfo;
+    return {
+        id: book.id,
+        title: volumeInfo.title || 'Unknown Title',
+        author: volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown Author',
+        cover: volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : getFallbackCover(volumeInfo.title),
+        rating: volumeInfo.averageRating || 0,
+        description: volumeInfo.description || 'No description available.',
+        publishedDate: volumeInfo.publishedDate,
+        pageCount: volumeInfo.pageCount,
+        genres: volumeInfo.categories || [],
+        publisher: volumeInfo.publisher,
+        language: volumeInfo.language,
+        isbn: volumeInfo.industryIdentifiers ? volumeInfo.industryIdentifiers[0]?.identifier : null
+    };
 }
 
 function getFallbackCover(title) {
@@ -297,7 +358,7 @@ function getFallbackBooks() {
             author: "Andy Weir",
             cover: getFallbackCover("Project Hail Mary"),
             rating: 4.7,
-            description: "A lone astronaut must save the earth from disaster in this incredible new science-based thriller from the #1 New York Times bestselling author of The Martian."
+            description: "A lone astronaut must save the earth from disaster in this incredible new science-based thriller."
         },
         {
             id: '3',
@@ -305,7 +366,7 @@ function getFallbackBooks() {
             author: "Kazuo Ishiguro",
             cover: getFallbackCover("Klara and the Sun"),
             rating: 4.2,
-            description: "From the bestselling author of Never Let Me Go and The Remains of the Day, a stunning new novel about the unchanging nature of humanity."
+            description: "From the bestselling author of Never Let Me Go and The Remains of the Day."
         },
         {
             id: '4',
@@ -403,7 +464,51 @@ function createBookElement(book) {
     return bookElement;
 }
 
-function openBookModal(book) {
+function createBookClubElement(club) {
+    const clubElement = document.createElement('div');
+    clubElement.className = 'bookclub-card slide-up';
+    clubElement.innerHTML = `
+        <img src="${club.image}" alt="${club.name}" class="bookclub-image">
+        <div class="bookclub-info">
+            <div class="bookclub-name">${club.name}</div>
+            <div class="bookclub-description">${club.description}</div>
+            <div class="bookclub-members">${club.members} members</div>
+        </div>
+    `;
+    return clubElement;
+}
+
+function createActivityElement(activity) {
+    const activityElement = document.createElement('div');
+    activityElement.className = 'activity-card fade-in';
+    
+    let actionText = '';
+    if (activity.action === 'rated') {
+        actionText = `rated <strong>${activity.target}</strong> ${'★'.repeat(activity.rating)}`;
+    } else if (activity.action === 'added') {
+        actionText = `added <strong>${activity.target}</strong> to ${activity.list}`;
+    } else if (activity.action === 'reviewed') {
+        actionText = `reviewed <strong>${activity.target}</strong>`;
+    } else if (activity.action === 'joined') {
+        actionText = `joined <strong>${activity.target}</strong>`;
+    }
+    
+    activityElement.innerHTML = `
+        <div class="activity-header">
+            <img src="${activity.avatar}" alt="${activity.user}" class="activity-avatar">
+            <div>
+                <div class="activity-user">${activity.user}</div>
+                <div class="activity-time">${activity.time}</div>
+            </div>
+        </div>
+        <div class="activity-content">
+            ${actionText}
+        </div>
+    `;
+    return activityElement;
+}
+
+async function openBookModal(book) {
     console.log('Opening book modal:', book.title);
     
     const modalTitle = document.getElementById('book-modal-title');
@@ -412,30 +517,77 @@ function openBookModal(book) {
     if (modalTitle) modalTitle.textContent = book.title;
     
     if (modalContent) {
+        // Show loading state
         modalContent.innerHTML = `
-            <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
-                <img src="${book.cover}" alt="${book.title}" style="width: 150px; height: 200px; object-fit: cover;">
-                <div>
-                    <h4 style="margin-bottom: 0.5rem;">${book.title}</h4>
-                    <p style="color: var(--dark-grey); margin-bottom: 1rem;">by ${book.author}</p>
-                    ${book.rating ? `<p><strong>Rating:</strong> ${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 ? '½' : ''} ${book.rating.toFixed(1)}</p>` : ''}
-                    <p style="margin-top: 1rem;">${book.description}</p>
-                </div>
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--orange);"></i>
+                <p>Loading book details...</p>
             </div>
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-                <button class="cta" style="background: var(--orange);"><i class="fas fa-heart"></i> Like</button>
-                <button class="cta" style="background: var(--dark-azure);"><i class="fas fa-star"></i> Rate</button>
-                <button class="cta" style="background: var(--grey-green);"><i class="fas fa-list"></i> Add to List</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Write a Review</label>
-                <textarea class="form-input" rows="4" placeholder="Share your thoughts about this book..."></textarea>
-            </div>
-            <button class="cta" style="width: 100%;">Submit Review</button>
         `;
+        
+        openModal('book-modal');
+        
+        try {
+            // Try to get more detailed information
+            let detailedBook = book;
+            if (book.id && !book.id.startsWith('fallback-')) {
+                const bookDetails = await getBookDetails(book.id);
+                if (bookDetails) {
+                    detailedBook = bookDetails;
+                }
+            }
+            
+            displayBookDetails(detailedBook);
+        } catch (error) {
+            console.error('Error loading book details:', error);
+            displayBookDetails(book); // Fallback to basic info
+        }
     }
+}
+
+function displayBookDetails(book) {
+    const modalContent = document.getElementById('book-modal-content');
     
-    openModal('book-modal');
+    modalContent.innerHTML = `
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <img src="${book.cover}" alt="${book.title}" style="width: 150px; height: 200px; object-fit: cover; border-radius: 8px;">
+            <div style="flex: 1; min-width: 250px;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--dark-azure);">${book.title}</h4>
+                <p style="color: var(--dark-grey); margin-bottom: 1rem;">by ${book.author}</p>
+                
+                ${book.rating ? `<p><strong>Rating:</strong> ${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 >= 0.5 ? '½' : ''} ${book.rating.toFixed(1)}/5</p>` : ''}
+                ${book.publishedDate ? `<p><strong>Published:</strong> ${new Date(book.publishedDate).getFullYear()}</p>` : ''}
+                ${book.pageCount ? `<p><strong>Pages:</strong> ${book.pageCount}</p>` : ''}
+                ${book.publisher ? `<p><strong>Publisher:</strong> ${book.publisher}</p>` : ''}
+                ${book.language ? `<p><strong>Language:</strong> ${book.language.toUpperCase()}</p>` : ''}
+                
+                ${book.genres && book.genres.length > 0 ? `
+                    <p><strong>Genres:</strong> ${book.genres.slice(0, 3).join(', ')}</p>
+                ` : ''}
+            </div>
+        </div>
+        
+        ${book.description && book.description !== 'No description available.' ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem;">Description</h4>
+                <p style="line-height: 1.6; max-height: 200px; overflow-y: auto; padding: 1rem; background: var(--light-grey); border-radius: 4px;">
+                    ${book.description}
+                </p>
+            </div>
+        ` : ''}
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button class="cta" style="background: var(--orange);"><i class="fas fa-heart"></i> Like</button>
+            <button class="cta" style="background: var(--dark-azure);"><i class="fas fa-star"></i> Rate</button>
+            <button class="cta" style="background: var(--grey-green);"><i class="fas fa-list"></i> Add to List</button>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Write a Review</label>
+            <textarea class="form-input" rows="4" placeholder="Share your thoughts about this book..."></textarea>
+        </div>
+        <button class="cta" style="width: 100%; background: var(--dark-grey-brown);">Submit Review</button>
+    `;
 }
 
 function initHomeAnimations() {
@@ -464,6 +616,25 @@ function initHomeAnimations() {
             opacity: 0,
             ease: 'power2.out'
         });
+    });
+    
+    // Motion path animation for floating books icon
+    const floatingBook = document.createElement('div');
+    floatingBook.innerHTML = '<i class="fas fa-book" style="font-size: 2rem; color: var(--orange);"></i>';
+    floatingBook.style.position = 'fixed';
+    floatingBook.style.bottom = '20px';
+    floatingBook.style.right = '20px';
+    floatingBook.style.zIndex = '1000';
+    document.body.appendChild(floatingBook);
+    
+    gsap.to(floatingBook, {
+        motionPath: {
+            path: [{x: 0, y: 0}, {x: -10, y: -20}, {x: 0, y: -40}, {x: 10, y: -20}, {x: 0, y: 0}],
+            curviness: 1.5
+        },
+        duration: 3,
+        repeat: -1,
+        ease: 'sine.inOut'
     });
 }
 
@@ -498,4 +669,35 @@ function showSuccess(elementId, message) {
             successElement.style.display = 'none';
         }, 3000);
     }
+}
+
+// Update UI based on user authentication
+function updateUIForUser() {
+    const userActions = document.querySelector('.user-actions');
+    if (!userActions) return;
+    
+    if (currentUser) {
+        userActions.innerHTML = `
+            <span style="margin-right: 1rem;">Hello, ${currentUser.name}</span>
+            <button id="logout-btn">LOG OUT</button>
+        `;
+        
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    } else {
+        userActions.innerHTML = `
+            <button id="login-btn">LOG IN</button>
+            <button id="signup-btn">SIGN UP</button>
+        `;
+        
+        // Re-attach event listeners
+        document.getElementById('login-btn').addEventListener('click', () => openModal('login-modal'));
+        document.getElementById('signup-btn').addEventListener('click', () => openModal('signup-modal'));
+    }
+}
+
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    updateUIForUser();
+    loadPage('home');
 }

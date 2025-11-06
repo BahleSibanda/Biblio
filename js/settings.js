@@ -1,13 +1,13 @@
 // Settings page functionality
-document.addEventListener('DOMContentLoaded', function() {
-    if (currentPage === 'settings') {
-        loadSettingsPage();
-    }
-});
+function initSettingsPage() {
+    console.log('Initializing settings page');
+    loadSettingsPage();
+    initSettingsAnimations();
+}
 
 function loadSettingsPage() {
     setupSettingsForm();
-    initSettingsAnimations();
+    loadCurrentSettings();
 }
 
 function setupSettingsForm() {
@@ -29,6 +29,17 @@ function setupSettingsForm() {
     });
 }
 
+function loadCurrentSettings() {
+    // Load current user settings
+    if (currentUser) {
+        const displayName = document.getElementById('display-name');
+        const username = document.getElementById('username');
+        
+        if (displayName) displayName.value = currentUser.name || '';
+        if (username) username.value = currentUser.username || '';
+    }
+}
+
 function validateField(field, showError = false) {
     const fieldId = field.id;
     const value = field.value.trim();
@@ -37,6 +48,9 @@ function validateField(field, showError = false) {
         case 'display-name':
             if (!value) {
                 if (showError) showError('name-error', 'Display name is required');
+                return false;
+            } else if (value.length < 2) {
+                if (showError) showError('name-error', 'Display name must be at least 2 characters');
                 return false;
             } else {
                 hideError('name-error');
@@ -50,8 +64,21 @@ function validateField(field, showError = false) {
             } else if (value.length < 3) {
                 if (showError) showError('username-error', 'Username must be at least 3 characters');
                 return false;
+            } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+                if (showError) showError('username-error', 'Username can only contain letters, numbers, and underscores');
+                return false;
             } else {
                 hideError('username-error');
+                return true;
+            }
+            
+        case 'profile-pic':
+        case 'header-pic':
+            if (value && !isValidUrl(value)) {
+                if (showError) showError(fieldId + '-error', 'Please enter a valid URL');
+                return false;
+            } else {
+                hideError(fieldId + '-error');
                 return true;
             }
             
@@ -60,14 +87,23 @@ function validateField(field, showError = false) {
     }
 }
 
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
 function handleSettingsSubmit(e) {
     e.preventDefault();
     
     let isValid = true;
     const form = e.target;
-    const inputs = form.querySelectorAll('input');
+    const inputs = form.querySelectorAll('input[required]');
     
-    // Validate all fields
+    // Validate all required fields
     inputs.forEach(input => {
         if (!validateField(input, true)) {
             isValid = false;
@@ -83,19 +119,21 @@ function handleSettingsSubmit(e) {
         saveButton.disabled = true;
         
         setTimeout(() => {
+            // Update user data
+            if (currentUser) {
+                currentUser.name = document.getElementById('display-name').value;
+                currentUser.username = document.getElementById('username').value;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            
             saveButton.textContent = originalText;
             saveButton.disabled = false;
             
             showSuccess('settings-success', 'Settings saved successfully!');
             
-            // Update profile if needed
-            const username = document.getElementById('username').value;
-            const displayName = document.getElementById('display-name').value;
+            // Update UI if needed
+            updateUIForUser();
             
-            if (currentUser) {
-                currentUser.username = username;
-                currentUser.name = displayName;
-            }
         }, 1500);
     }
 }
@@ -132,4 +170,17 @@ function initSettingsAnimations() {
         transformOrigin: 'center',
         scale: 0
     });
+    
+    // Prepare success message animation
+    const successElement = document.getElementById('settings-success');
+    if (successElement) {
+        successElement.addEventListener('DOMNodeInserted', function() {
+            if (this.style.display === 'block') {
+                gsap.fromTo(this, 
+                    { scale: 0, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+                );
+            }
+        });
+    }
 }
