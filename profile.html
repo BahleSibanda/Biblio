@@ -1,48 +1,87 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Biblio — Profile</title>
-
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
-
-  <!-- ✅ AUTH PROTECTION -->
-  <script>
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser) {
-      alert("Please sign in to access your profile.");
-      window.location.href = "signin.html";
-    }
-  </script>
-</head>
-
-<body>
-  <div class="app">
-
-    <!-- ✅ SIDEBAR -->
-    <aside class="sidebar" aria-label="Main navigation">
-      <div class="logo">
-        <div class="logo-icon">📚</div>
-      </div>
-      <nav class="side-icons">
-        <button class="icon-btn" onclick="location.href='index.html'" aria-label="Home">🏠</button>
-        <button class="icon-btn" onclick="location.href='discover.html'" aria-label="Discover">🔍</button>
-        <button class="icon-btn" onclick="location.href='bookclubs.html'" aria-label="Bookclubs">📖</button>
-        <button class="icon-btn active" aria-label="Profile">👤</button>
-      </nav>
-    </aside>
-
-    <!-- ✅ MAIN CONTENT -->
-    <main class="main-content">
-
-      <!-- ✅ TOP NAV -->
-      <header class="top-nav">
-        <div class="nav-left">
-          <h1 class="brand">Biblio</h1>
-          <nav class="top-links">
-            <a href="index.html" class="pill">Home</a>
-            <a href="discover.
-
+<div id="profile-page" class="page">
+    <div class="profile-header">
+        <img src="https://via.placeholder.com/1200x200/4C6145/FFFFFF?text=Header+Image" alt="Header" class="header-image">
+        <img src="https://via.placeholder.com/100/74925D/FFFFFF?text=User" alt="Profile" class="profile-picture">
+        <div class="profile-info">
+            <div class="username">Bookworm42</div>
+            <div class="name">Alex Johnson</div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value">127</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">89</span>
+                    <span class="stat-label">Following</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="profile-tabs">
+        <div class="profile-tab active" data-tab="profile">Profile</div>
+        <div class="profile-tab" data-tab="bookshelf">Bookshelf</div>
+        <div class="profile-tab" data-tab="lists">Lists</div>
+        <div class="profile-tab" data-tab="likes">Likes</div>
+        <div class="profile-tab" data-tab="reviews">Reviews</div>
+    </div>
+    <div class="profile-content">
+        <div>
+            <div id="profile-tab-content">
+                <div class="content-box">
+                    <h3 class="section-title">Top 4 Reads</h3>
+                    <div class="top-reads" id="top-reads">
+                        <!-- Top reads will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="content-box">
+                    <h3 class="section-title">Bookshelf</h3>
+                    <div class="bookshelf" id="bookshelf">
+                        <!-- Bookshelf will be populated by JavaScript -->
+                    </div>
+                    <button class="cta" style="margin-top: 1rem; width: 100%; background: var(--dark-azure);">View All Books</button>
+                </div>
+            </div>
+            <div id="bookshelf-tab-content" style="display: none;">
+                <div class="content-box">
+                    <h3 class="section-title">All Books</h3>
+                    <div class="book-grid" id="all-books">
+                        <!-- All books will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div id="lists-tab-content" style="display: none;">
+                <div class="content-box">
+                    <h3 class="section-title">Your Lists</h3>
+                    <div id="user-lists">
+                        <!-- Lists will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div id="likes-tab-content" style="display: none;">
+                <div class="content-box">
+                    <h3 class="section-title">Liked Books & Lists</h3>
+                    <div id="liked-content">
+                        <!-- Liked content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div id="reviews-tab-content" style="display: none;">
+                <div class="content-box">
+                    <h3 class="section-title">Your Reviews</h3>
+                    <div id="user-reviews">
+                        <!-- Reviews will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="content-box">
+                <h3 class="section-title">Recent Activity</h3>
+                <div id="profile-activity">
+                    <!-- Activity will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 

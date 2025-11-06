@@ -1,163 +1,193 @@
-// =============================================
-// ✅ BIBLIO AUTH SYSTEM — CLEAN & FIXED
-// =============================================
-
-// -------------------------
-// ✅ GSAP Intro Animation
-// -------------------------
-window.addEventListener("DOMContentLoaded", () => {
-  const wrapper = document.querySelector(".auth-wrapper");
-  const activeForm = document.querySelector(".auth-form.active");
-
-  if (wrapper && activeForm && window.gsap) {
-    gsap.from(wrapper, { opacity: 0, y: 30, duration: 0.8 });
-
-    gsap.from(activeForm.querySelectorAll("input, .btn"), {
-      opacity: 0,
-      y: 10,
-      stagger: 0.1,
-      duration: 0.5,
-      delay: 0.2
-    });
-  }
-});
-
-// -------------------------
-// ✅ Form Elements
-// -------------------------
-const signInForm = document.getElementById("signin-form");
-const signUpForm = document.getElementById("signup-form");
-const toSignup = document.getElementById("to-signup");
-const toSignin = document.getElementById("to-signin");
-
-// -------------------------
-// ✅ Switch Forms
-// -------------------------
-toSignup?.addEventListener("click", (e) => {
-  e.preventDefault();
-
-  signInForm.classList.remove("active");
-  signUpForm.classList.add("active");
-
-  gsap.from(signUpForm, { opacity: 0, x: 30, duration: 0.4 });
-});
-
-toSignin?.addEventListener("click", (e) => {
-  e.preventDefault();
-
-  signUpForm.classList.remove("active");
-  signInForm.classList.add("active");
-
-  gsap.from(signInForm, { opacity: 0, x: -30, duration: 0.4 });
-});
-
-// -------------------------
-// ✅ LocalStorage Helpers
-// -------------------------
-function getUsers() {
-  return JSON.parse(localStorage.getItem("users") || "[]");
-}
-
-function saveUsers(users) {
-  localStorage.setItem("users", JSON.stringify(users));
-}
-
-// -------------------------
-// ✅ SIGN UP
-// -------------------------
-signUpForm?.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const name = document.getElementById("signup-name").value.trim();
-  const email = document.getElementById("signup-email").value.trim().toLowerCase();
-  const password = document.getElementById("signup-password").value.trim();
-
-  if (!name || !email || !password) {
-    alert("Please fill in all fields.");
-    return;
-  }
-
-  const users = getUsers();
-
-  if (users.some(u => u.email === email)) {
-    alert("This email is already registered.");
-    return;
-  }
-
-  users.push({ name, email, password });
-  saveUsers(users);
-
-  alert("Account created successfully!");
-
-  signUpForm.reset();
-  signUpForm.classList.remove("active");
-  signInForm.classList.add("active");
-});
-
-// -------------------------
-// ✅ SIGN IN
-// -------------------------
-signInForm?.addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("signin-email").value.trim().toLowerCase();
-  const password = document.getElementById("signin-password").value.trim();
-
-  const users = getUsers();
-  const user = users.find(u => u.email === email && u.password === password);
-
-  if (!user) {
-    alert("Invalid email or password.");
-    return;
-  }
-
-  localStorage.setItem("currentUser", JSON.stringify(user));
-
-  // ✅ Smooth exit transition
-  gsap.to(".auth-wrapper", {
-    opacity: 0,
-    y: -20,
-    duration: 0.5,
-    onComplete: () => {
-      window.location.href = "profile.html";
+// Enhanced Authentication functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
     }
-  });
+    
+    if (signupForm) {
+        signupForm.addEventListener('submit', handleSignup);
+    }
+    
+    // Check if user is already logged in (from localStorage)
+    checkAuthState();
 });
 
-// -------------------------
-// ✅ AUTH PROTECTION (for pages like profile.html)
-// -------------------------
-function requireAuth() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) {
-    alert("You must sign in first.");
-    window.location.href = "signin.html";
-  }
-  return user;
+function checkAuthState() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateUIForUser();
+    }
 }
 
-// -------------------------
-// ✅ LOG OUT (runs only IF logout button exists)
-// -------------------------
-const logoutBtn = document.getElementById("logout-btn");
-logoutBtn?.addEventListener("click", () => {
-  localStorage.removeItem("currentUser");
-  alert("Logged out.");
-  window.location.href = "signin.html";
-});
-
-// -------------------------
-// ✅ NAVBAR PROFILE LINK UPDATE
-// -------------------------
-const profileNav = document.getElementById("nav-profile-link");
-if (profileNav) {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) {
-    profileNav.textContent = "Sign In";
-    profileNav.href = "signin.html";
-  } else {
-    profileNav.textContent = `Hi, ${user.name}`;
-    profileNav.href = "profile.html";
-  }
+function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    
+    // Simple validation
+    let isValid = true;
+    
+    if (!username) {
+        showError('login-username-error', 'Username or email is required');
+        isValid = false;
+    } else {
+        hideError('login-username-error');
+    }
+    
+    if (!password) {
+        showError('login-password-error', 'Password is required');
+        isValid = false;
+    } else {
+        hideError('login-password-error');
+    }
+    
+    if (isValid) {
+        // Simulate API call
+        simulateAPICall('/api/login', { username, password })
+            .then(userData => {
+                currentUser = userData;
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                
+                showSuccess('login-success', 'Login successful!');
+                
+                setTimeout(() => {
+                    closeAllModals();
+                    updateUIForUser();
+                    // Reload current page to update content
+                    loadPage(currentPage);
+                }, 1500);
+            })
+            .catch(error => {
+                showError('login-username-error', 'Invalid credentials');
+            });
+    }
 }
 
+function handleSignup(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('signup-name').value;
+    const username = document.getElementById('signup-username').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm').value;
+    
+    // Validation
+    let isValid = true;
+    
+    if (!name) {
+        showError('signup-name-error', 'Full name is required');
+        isValid = false;
+    } else {
+        hideError('signup-name-error');
+    }
+    
+    if (!username) {
+        showError('signup-username-error', 'Username is required');
+        isValid = false;
+    } else if (username.length < 3) {
+        showError('signup-username-error', 'Username must be at least 3 characters');
+        isValid = false;
+    } else {
+        hideError('signup-username-error');
+    }
+    
+    if (!email || !validateEmail(email)) {
+        showError('signup-email-error', 'Valid email is required');
+        isValid = false;
+    } else {
+        hideError('signup-email-error');
+    }
+    
+    if (!password || password.length < 6) {
+        showError('signup-password-error', 'Password must be at least 6 characters');
+        isValid = false;
+    } else {
+        hideError('signup-password-error');
+    }
+    
+    if (password !== confirmPassword) {
+        showError('signup-confirm-error', 'Passwords do not match');
+        isValid = false;
+    } else {
+        hideError('signup-confirm-error');
+    }
+    
+    if (isValid) {
+        // Simulate API call
+        simulateAPICall('/api/signup', { name, username, email, password })
+            .then(userData => {
+                currentUser = userData;
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                
+                showSuccess('signup-success', 'Account created successfully!');
+                
+                setTimeout(() => {
+                    closeAllModals();
+                    updateUIForUser();
+                    loadPage('profile');
+                }, 1500);
+            })
+            .catch(error => {
+                showError('signup-username-error', 'Username or email already exists');
+            });
+    }
+}
+
+function simulateAPICall(endpoint, data) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            // Simulate successful login/signup for demo
+            if (endpoint === '/api/login' || endpoint === '/api/signup') {
+                resolve({
+                    id: 1,
+                    username: data.username,
+                    name: data.name || data.username,
+                    email: data.email,
+                    joinDate: new Date().toISOString()
+                });
+            } else {
+                reject(new Error('Authentication failed'));
+            }
+        }, 1000);
+    });
+}
+
+function updateUIForUser() {
+    const userActions = document.querySelector('.user-actions');
+    if (currentUser) {
+        userActions.innerHTML = `
+            <span style="margin-right: 1rem;">Hello, ${currentUser.name}</span>
+            <button id="logout-btn">LOG OUT</button>
+        `;
+        
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    } else {
+        userActions.innerHTML = `
+            <button id="login-btn">LOG IN</button>
+            <button id="signup-btn">SIGN UP</button>
+        `;
+        
+        // Re-attach event listeners
+        document.getElementById('login-btn').addEventListener('click', () => openModal('login-modal'));
+        document.getElementById('signup-btn').addEventListener('click', () => openModal('signup-modal'));
+    }
+}
+
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    updateUIForUser();
+    loadPage('home');
+}
+
+// Enhanced email validation
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
