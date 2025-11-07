@@ -3,11 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Clubs</title>
+    <title>Book Clubs - Your App</title>
+    <!-- CSS LINKS - CRITICAL -->
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../pages.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Navigation (if not loaded by main.js) -->
+    <nav class="top-nav">
+        <div class="logo">
+            <i class="fas fa-book"></i>
+            <span>BookWorms</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" data-page="home">HOME</a>
+            <a href="#" data-page="discover">DISCOVER</a>
+            <a href="#" data-page="bookclubs" class="active">BOOKCLUBS</a>
+            <a href="#" data-page="following">FOLLOWING</a>
+        </div>
+        <div class="user-actions">
+            <button id="login-btn">LOG IN</button>
+            <button id="signup-btn">SIGN UP</button>
+        </div>
+    </nav>
+
+    <!-- Side Menu -->
+    <div class="side-menu">
+        <a href="#" data-page="home" title="Home">
+            <i class="fas fa-home"></i>
+        </a>
+        <a href="#" data-page="discover" title="Discover">
+            <i class="fas fa-compass"></i>
+        </a>
+        <a href="#" data-page="bookclubs" class="active" title="Book Clubs">
+            <i class="fas fa-users"></i>
+        </a>
+        <a href="#" data-page="following" title="Following">
+            <i class="fas fa-heart"></i>
+        </a>
+        <a href="#" id="search-modal-btn" title="Search">
+            <i class="fas fa-search"></i>
+        </a>
+        <a href="#" data-page="notifications" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+        </a>
+    </div>
+
+    <!-- Main Content -->
     <div class="bookclubs-page">
         <!-- Search Section -->
         <div class="bookclubs-search">
@@ -21,10 +66,71 @@
         </div>
         
         <div class="bookclubs-grid" id="your-bookclubs">
-            <!-- Content will be populated -->
+            <!-- Book Club Card 1 -->
+            <div class="bookclub-card">
+                <div class="bookclub-header">
+                    <div class="bookclub-avatar"></div>
+                    <div class="bookclub-info">
+                        <div class="bookclub-name">Calling all local fantasy lovers...</div>
+                        <div class="bookclub-members">1.2k members</div>
+                    </div>
+                </div>
+                <p class="bookclub-description">Join our community of fantasy enthusiasts discussing epic tales and magical worlds.</p>
+                <div class="bookclub-actions">
+                    <button class="btn-view">View</button>
+                    <button class="btn-join">Join Club</button>
+                </div>
+            </div>
+            
+            <!-- Book Club Card 2 -->
+            <div class="bookclub-card">
+                <div class="bookclub-header">
+                    <div class="bookclub-avatar"></div>
+                    <div class="bookclub-info">
+                        <div class="bookclub-name">Political and class conscious readers gather...</div>
+                        <div class="bookclub-members">845 members</div>
+                    </div>
+                </div>
+                <p class="bookclub-description">Discussing literature that explores social issues, politics, and class dynamics.</p>
+                <div class="bookclub-actions">
+                    <button class="btn-view">View</button>
+                    <button class="btn-join">Join Club</button>
+                </div>
+            </div>
         </div>
         
-        <!-- Rest of your content... -->
+        <!-- Popular Book Clubs Section -->
+        <div class="section-header">
+            <h2 class="section-title">POPULAR BOOK CLUBS</h2>
+            <a href="#" class="see-all">See All</a>
+        </div>
+        
+        <div class="bookclubs-grid" id="popular-bookclubs">
+            <!-- Popular book clubs will be populated here -->
+        </div>
+        
+        <!-- Newsletters Section -->
+        <div class="section-header">
+            <h2 class="section-title">NEWSLETTERS</h2>
+        </div>
+        
+        <div class="newsletter-grid">
+            <!-- Newsletter 1 -->
+            <div class="newsletter-card">
+                <div class="newsletter-title">Newsletter 1</div>
+                <p class="newsletter-summary">Summary text describing what this newsletter covers and why readers should subscribe.</p>
+            </div>
+            
+            <!-- Newsletter 2 -->
+            <div class="newsletter-card">
+                <div class="newsletter-title">Newsletter 2</div>
+                <p class="newsletter-summary">Summary text describing what this newsletter covers and why readers should subscribe.</p>
+            </div>
+        </div>
     </div>
+
+    <!-- JavaScript -->
+    <script src="../js/main.js"></script>
+    <script src="../js/bookclubs.js"></script>
 </body>
 </html>
