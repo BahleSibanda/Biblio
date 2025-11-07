@@ -316,13 +316,14 @@ function updateActiveNav(clickedLink = null) {
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'flex';
+        // Use class-based toggling so CSS handles layout (see .modal.show in style.css)
+        modal.classList.add('show');
     }
 }
 
 function closeAllModals() {
     modals.forEach(modal => {
-        modal.style.display = 'none';
+        modal.classList.remove('show');
     });
 }
 
