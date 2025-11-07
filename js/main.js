@@ -6,7 +6,7 @@ let currentPage = 'home';
 const API_CONFIG = {
     googleBooks: {
         baseUrl: 'https://www.googleapis.com/books/v1/volumes',
-        apiKey: 'AIzaSyB1eFmP5eAiwP1dGZzWtOaY0pWwX8X8X8X8' // Demo key - replace with yours
+        apiKey: 'AIzaSyAZ_14psPjeNrXVpP_szFHpzHfgCAc5Eds' 
     },
     openLibrary: {
         baseUrl: 'https://openlibrary.org',
