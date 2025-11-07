@@ -127,6 +127,17 @@ function setupEventListeners() {
 function loadPage(page) {
     console.log('Loading page:', page);
     currentPage = page;
+
+       // Check if user needs to be logged in for protected pages
+    if ((page === 'profile' || page === 'notifications' || page === 'settings') && !currentUser) {
+        console.log('User not logged in, redirecting to login');
+        openModal('login-modal');
+        
+        // Show a message explaining why they need to login
+        showLoginRequiredMessage(page);
+        return;
+    }
+     
     
     if (page === 'home') {
         // Show home page, hide other pages
@@ -166,6 +177,54 @@ function loadPage(page) {
     
     updateActiveNav();
 }
+
+// Add this new function to show login required message
+function showLoginRequiredMessage(page) {
+    const pageNames = {
+        'profile': 'Profile',
+        'notifications': 'Notifications', 
+        'settings': 'Settings'
+    };
+    
+    // Create a temporary message
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--orange);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        z-index: 10001;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        max-width: 300px;
+    `;
+    messageDiv.innerHTML = `
+        <h3 style="margin-bottom: 1rem;">Login Required</h3>
+        <p style="margin-bottom: 1.5rem;">Please log in to access your ${pageNames[page]}.</p>
+        <button onclick="this.parentElement.remove()" style="
+            background: white; 
+            color: var(--orange); 
+            border: none; 
+            padding: 0.5rem 1rem; 
+            border-radius: 4px; 
+            cursor: pointer;
+        ">OK</button>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (document.body.contains(messageDiv)) {
+            document.body.removeChild(messageDiv);
+        }
+    }, 5000);
+}
+
 
 // Load page-specific JavaScript
 function loadPageScript(page) {
