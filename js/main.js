@@ -31,7 +31,6 @@ const sampleActivities = [
 
 
 
-
 // DOM Elements
 const homePage = document.getElementById('home-page');
 const pageContent = document.getElementById('page-content');
@@ -316,14 +315,13 @@ function updateActiveNav(clickedLink = null) {
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        // Use class-based toggling so CSS handles layout (see .modal.show in style.css)
-        modal.classList.add('show');
+        modal.style.display = 'flex';
     }
 }
 
 function closeAllModals() {
     modals.forEach(modal => {
-        modal.classList.remove('show');
+        modal.style.display = 'none';
     });
 }
 
@@ -653,55 +651,44 @@ function displayBookDetails(book) {
     const modalContent = document.getElementById('book-modal-content');
     
     modalContent.innerHTML = `
-        <div class="book-modal-content" style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: flex-start;">
-            <img src="${book.cover}" alt="${book.title}" 
-                 class="book-modal-cover"
-                 style="width: 200px; height: 300px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-            
-            <div class="book-modal-details" style="flex: 1; min-width: 300px;">
-                <h3 style="margin-bottom: 0.5rem; color: var(--dark-azure); font-size: 1.5rem;">${book.title}</h3>
-                <p style="color: var(--dark-grey); margin-bottom: 1.5rem; font-size: 1.1rem;">by ${book.author}</p>
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <img src="${book.cover}" alt="${book.title}" style="width: 150px; height: 200px; object-fit: cover; border-radius: 8px;">
+            <div style="flex: 1; min-width: 250px;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--dark-azure);">${book.title}</h4>
+                <p style="color: var(--dark-grey); margin-bottom: 1rem;">by ${book.author}</p>
                 
-                <div style="display: grid; gap: 0.5rem; margin-bottom: 1.5rem;">
-                    ${book.rating ? `<div><strong>Rating:</strong> ${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 >= 0.5 ? '½' : ''} ${book.rating.toFixed(1)}/5</div>` : ''}
-                    ${book.publishedDate ? `<div><strong>Published:</strong> ${new Date(book.publishedDate).getFullYear()}</div>` : ''}
-                    ${book.pageCount ? `<div><strong>Pages:</strong> ${book.pageCount}</div>` : ''}
-                    ${book.publisher ? `<div><strong>Publisher:</strong> ${book.publisher}</div>` : ''}
-                    ${book.language ? `<div><strong>Language:</strong> ${book.language.toUpperCase()}</div>` : ''}
-                    
-                    ${book.genres && book.genres.length > 0 ? `
-                        <div><strong>Genres:</strong> ${book.genres.slice(0, 3).join(', ')}</div>
-                    ` : ''}
-                </div>
+                ${book.rating ? `<p><strong>Rating:</strong> ${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 >= 0.5 ? '½' : ''} ${book.rating.toFixed(1)}/5</p>` : ''}
+                ${book.publishedDate ? `<p><strong>Published:</strong> ${new Date(book.publishedDate).getFullYear()}</p>` : ''}
+                ${book.pageCount ? `<p><strong>Pages:</strong> ${book.pageCount}</p>` : ''}
+                ${book.publisher ? `<p><strong>Publisher:</strong> ${book.publisher}</p>` : ''}
+                ${book.language ? `<p><strong>Language:</strong> ${book.language.toUpperCase()}</p>` : ''}
+                
+                ${book.genres && book.genres.length > 0 ? `
+                    <p><strong>Genres:</strong> ${book.genres.slice(0, 3).join(', ')}</p>
+                ` : ''}
             </div>
         </div>
         
         ${book.description && book.description !== 'No description available.' ? `
-            <div style="margin-bottom: 2rem;">
-                <h4 style="margin-bottom: 1rem; color: var(--dark-azure);">Description</h4>
-                <div style="line-height: 1.6; padding: 1.5rem; background: var(--light-grey); border-radius: 8px; border-left: 4px solid var(--orange);">
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem;">Description</h4>
+                <p style="line-height: 1.6; max-height: 200px; overflow-y: auto; padding: 1rem; background: var(--light-grey); border-radius: 4px;">
                     ${book.description}
-                </div>
+                </p>
             </div>
         ` : ''}
         
-        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
-            <button class="cta" style="background: var(--orange); padding: 0.75rem 1.5rem;">
-                <i class="fas fa-heart"></i> Like
-            </button>
-            <button class="cta" style="background: var(--dark-azure); padding: 0.75rem 1.5rem;">
-                <i class="fas fa-star"></i> Rate
-            </button>
-            <button class="cta" style="background: var(--grey-green); padding: 0.75rem 1.5rem;">
-                <i class="fas fa-list"></i> Add to List
-            </button>
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button class="cta" style="background: var(--orange);"><i class="fas fa-heart"></i> Like</button>
+            <button class="cta" style="background: var(--dark-azure);"><i class="fas fa-star"></i> Rate</button>
+            <button class="cta" style="background: var(--grey-green);"><i class="fas fa-list"></i> Add to List</button>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1.5rem;">
+        <div class="form-group">
             <label class="form-label">Write a Review</label>
-            <textarea class="form-input" rows="4" placeholder="Share your thoughts about this book..." style="width: 100%;"></textarea>
+            <textarea class="form-input" rows="4" placeholder="Share your thoughts about this book..."></textarea>
         </div>
-        <button class="cta" style="width: 100%; background: var(--dark-grey-brown); padding: 1rem;">Submit Review</button>
+        <button class="cta" style="width: 100%; background: var(--dark-grey-brown);">Submit Review</button>
     `;
 }
 
