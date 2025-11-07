@@ -27,6 +27,129 @@ const sampleActivities = [
     { user: "LiteraryExplorer", action: "reviewed", target: "Klara and the Sun", time: "1 day ago", avatar: "https://via.placeholder.com/40/143035/FFFFFF?text=LE" }
 ];
 
+// Sample data for fallback
+const sampleBookClubs = [
+    { id: 1, name: "Sci-Fi Enthusiasts", description: "Exploring the vast universe of science fiction literature", members: 42, image: "https://via.placeholder.com/300/143035/FFFFFF?text=Sci-Fi+Club" },
+    { id: 2, name: "Historical Fiction Lovers", description: "Journeying through time with historical novels", members: 38, image: "https://via.placeholder.com/300/4C6145/FFFFFF?text=Historical+Fiction" },
+    { id: 3, name: "Mystery & Thriller Club", description: "Unraveling mysteries one page at a time", members: 56, image: "https://via.placeholder.com/300/312021/FFFFFF?text=Mystery+Club" }
+];
+
+const sampleActivities = [
+    { user: "BookLover23", action: "rated", target: "The Midnight Library", rating: 5, time: "2 hours ago", avatar: "https://via.placeholder.com/40/74925D/FFFFFF?text=BL" },
+    { user: "PageTurner", action: "added", target: "Project Hail Mary", list: "To Be Read", time: "5 hours ago", avatar: "https://via.placeholder.com/40/4C6145/FFFFFF?text=PT" },
+    { user: "LiteraryExplorer", action: "reviewed", target: "Klara and the Sun", time: "1 day ago", avatar: "https://via.placeholder.com/40/143035/FFFFFF?text=LE" }
+];
+
+// ADD THIS - Sample books for search functionality
+const sampleBooks = [
+    {
+        id: '1',
+        title: "The Midnight Library",
+        author: "Matt Haig",
+        cover: "https://via.placeholder.com/150/74925D/FFFFFF?text=The+Midnight+Library",
+        rating: 4.5,
+        description: "A novel about a library that contains books that let you experience the lives you might have lived.",
+        publishedDate: "2020-08-13",
+        pageCount: 304,
+        genres: ["Fiction", "Science Fiction", "Fantasy"],
+        publisher: "Canongate Books",
+        language: "en"
+    },
+    {
+        id: '2',
+        title: "Project Hail Mary",
+        author: "Andy Weir",
+        cover: "https://via.placeholder.com/150/4C6145/FFFFFF?text=Project+Hail+Mary",
+        rating: 4.7,
+        description: "A lone astronaut must save the earth from disaster in this incredible new science-based thriller.",
+        publishedDate: "2021-05-04",
+        pageCount: 476,
+        genres: ["Science Fiction", "Thriller", "Adventure"],
+        publisher: "Ballantine Books",
+        language: "en"
+    },
+    {
+        id: '3',
+        title: "Klara and the Sun",
+        author: "Kazuo Ishiguro",
+        cover: "https://via.placeholder.com/150/143035/FFFFFF?text=Klara+and+the+Sun",
+        rating: 4.2,
+        description: "From the bestselling author of Never Let Me Go and The Remains of the Day.",
+        publishedDate: "2021-03-02",
+        pageCount: 320,
+        genres: ["Science Fiction", "Literary Fiction"],
+        publisher: "Faber & Faber",
+        language: "en"
+    },
+    {
+        id: '4',
+        title: "The Invisible Life of Addie LaRue",
+        author: "V.E. Schwab",
+        cover: "https://via.placeholder.com/150/312021/FFFFFF?text=Addie+LaRue",
+        rating: 4.3,
+        description: "A Life No One Will Remember. A Story You Will Never Forget.",
+        publishedDate: "2020-10-06",
+        pageCount: 448,
+        genres: ["Fantasy", "Historical Fiction", "Romance"],
+        publisher: "Tor Books",
+        language: "en"
+    },
+    {
+        id: '5',
+        title: "Where the Crawdads Sing",
+        author: "Delia Owens",
+        cover: "https://via.placeholder.com/150/74925D/FFFFFF?text=Crawdads+Sing",
+        rating: 4.8,
+        description: "For years, rumors of the 'Marsh Girl' have haunted Barkley Cove, a quiet town on the North Carolina coast.",
+        publishedDate: "2018-08-14",
+        pageCount: 384,
+        genres: ["Mystery", "Literary Fiction", "Coming-of-age"],
+        publisher: "G.P. Putnam's Sons",
+        language: "en"
+    },
+    {
+        id: '6',
+        title: "Dune",
+        author: "Frank Herbert",
+        cover: "https://via.placeholder.com/150/4C6145/FFFFFF?text=Dune",
+        rating: 4.6,
+        description: "Set in the distant future amidst a feudal interstellar society in which various noble houses control planetary fiefs.",
+        publishedDate: "1965-08-01",
+        pageCount: 412,
+        genres: ["Science Fiction", "Adventure", "Classic"],
+        publisher: "Chilton Books",
+        language: "en"
+    },
+    {
+        id: '7',
+        title: "The Seven Husbands of Evelyn Hugo",
+        author: "Taylor Jenkins Reid",
+        cover: "https://via.placeholder.com/150/143035/FFFFFF?text=Evelyn+Hugo",
+        rating: 4.5,
+        description: "Aging and reclusive Hollywood movie icon Evelyn Hugo is finally ready to tell the truth about her glamorous and scandalous life.",
+        publishedDate: "2017-06-13",
+        pageCount: 389,
+        genres: ["Historical Fiction", "LGBT", "Romance"],
+        publisher: "Atria Books",
+        language: "en"
+    },
+    {
+        id: '8',
+        title: "Atomic Habits",
+        author: "James Clear",
+        cover: "https://via.placeholder.com/150/312021/FFFFFF?text=Atomic+Habits",
+        rating: 4.8,
+        description: "Tiny Changes, Remarkable Results: An Easy & Proven Way to Build Good Habits & Break Bad Ones",
+        publishedDate: "2018-10-16",
+        pageCount: 320,
+        genres: ["Self-help", "Psychology", "Personal Development"],
+        publisher: "Avery",
+        language: "en"
+    }
+];
+
+
+
 // DOM Elements
 const homePage = document.getElementById('home-page');
 const pageContent = document.getElementById('page-content');
@@ -65,6 +188,12 @@ function setupEventListeners() {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const page = link.dataset.page;
+            
+            // Validate page name
+            if (!page || page === 'undefined') {
+                console.error('Invalid page name:', page);
+                return;
+            }
             
             // Skip if already on home page
             if (page === 'home' && currentPage === 'home') {
@@ -124,22 +253,29 @@ function setupEventListeners() {
 }
 
 // Load page content (only for non-home pages)
-function loadPage(page) {
-    console.log('Loading page:', page);
-    currentPage = page;
+function loadPage(pageName) {
+    // Validate page name
+    if (!pageName || pageName === 'undefined') {
+        console.error('Invalid page name provided:', pageName);
+        showErrorMessage('Invalid page request');
+        return;
+    }
+    
+    console.log('Loading page:', pageName);
+    currentPage = pageName;
 
-       // Check if user needs to be logged in for protected pages
-    if ((page === 'profile' || page === 'notifications' || page === 'settings') && !currentUser) {
+    // Check if user needs to be logged in for protected pages
+    if ((pageName === 'profile' || pageName === 'notifications' || pageName === 'settings') && !currentUser) {
         console.log('User not logged in, redirecting to login');
         openModal('login-modal');
         
         // Show a message explaining why they need to login
-        showLoginRequiredMessage(page);
+        showLoginRequiredMessage(pageName);
         return;
     }
      
     
-    if (page === 'home') {
+    if (pageName === 'home') {
         // Show home page, hide other pages
         if (homePage) homePage.style.display = 'block';
         if (pageContent) {
@@ -155,7 +291,7 @@ function loadPage(page) {
         if (pageContent) {
             pageContent.style.display = 'block';
             
-            fetch(`pages/${page}.html`)
+            fetch(`pages/${pageName}.html`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Page not found');
@@ -166,7 +302,7 @@ function loadPage(page) {
                     pageContent.innerHTML = html;
                     
                     // Load page-specific JavaScript
-                    loadPageScript(page);
+                    loadPageScript(pageName);
                 })
                 .catch(error => {
                     console.error('Error loading page:', error);
@@ -176,6 +312,31 @@ function loadPage(page) {
     }
     
     updateActiveNav();
+}
+
+// Add error message function
+function showErrorMessage(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff4444;
+        color: white;
+        padding: 1rem;
+        border-radius: 4px;
+        z-index: 10001;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    `;
+    errorDiv.textContent = message;
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        if (document.body.contains(errorDiv)) {
+            document.body.removeChild(errorDiv);
+        }
+    }, 3000);
 }
 
 // Add this new function to show login required message
@@ -224,7 +385,6 @@ function showLoginRequiredMessage(page) {
         }
     }, 5000);
 }
-
 
 // Load page-specific JavaScript
 function loadPageScript(page) {
@@ -311,6 +471,8 @@ function initHomePage() {
 
 // API Service Functions
 async function searchBooks(query, maxResults = 12) {
+    console.log( 'Searching for: "${query}')
+
     try {
         const response = await fetch(
             `${API_CONFIG.googleBooks.baseUrl}?q=${encodeURIComponent(query)}&maxResults=${maxResults}&printType=books`
@@ -333,7 +495,7 @@ async function getTrendingBooks() {
     // For trending books, search popular terms
     const popularSearches = ['bestselling fiction', 'new releases', 'award winning'];
     const randomSearch = popularSearches[Math.floor(Math.random() * popularSearches.length)];
-    
+
     try {
         return await searchBooks(randomSearch, 8);
     } catch (error) {
