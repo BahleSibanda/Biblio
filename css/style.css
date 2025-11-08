@@ -261,5 +261,21 @@ button{font-family:inherit}
   display:block;
 }
 
+.toast-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+
 /* Allow devs to easily customize side icons colors via classes */
 .side-item.custom-orange{background:linear-gradient(45deg,var(--orange), #d9741b); color:#fff}

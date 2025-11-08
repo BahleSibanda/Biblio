@@ -19,22 +19,42 @@ if (signupForm) {
     const email = document.getElementById("signup-email").value;
     const password = document.getElementById("signup-password").value;
 
-try {
+    try {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
-  alert(`Signup successful! Welcome, ${name}.`);
   signupForm.reset();
 
-  // ✅ Close the modal
+  // ✅ Animate modal closing
   const authModal = document.getElementById("auth-modal");
-  if (authModal) {
-    authModal.setAttribute("aria-hidden", "true");
-    authModal.style.display = "none";
-  }
+  gsap.to(authModal, {
+    opacity: 0,
+    duration: 0.5,
+    onComplete: () => {
+      authModal.style.display = "none";
+      authModal.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  // ✅ Show animated toast message
+  const toast = document.getElementById("toast-message");
+  toast.textContent = `Welcome to Biblio, ${name}!`;
+  gsap.to(toast, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
+  
+  // Fade out after 3 seconds
+  gsap.to(toast, { opacity: 0, delay: 3, duration: 0.5, ease: "power2.in" });
+
 } catch (err) {
-  alert("Signup failed: " + err.message);
   console.error(err);
+  const toast = document.getElementById("toast-message");
+  toast.textContent = `Signup failed: ${err.message}`;
+  toast.style.backgroundColor = "#E53935"; // red
+  gsap.to(toast, { opacity: 1, y: 0, duration: 0.5 });
+  gsap.to(toast, { opacity: 0, delay: 3, duration: 0.5 });
+}
+
+   
+  });
 }
 
       
