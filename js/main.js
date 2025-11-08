@@ -1,805 +1,229 @@
-// Application State
-let currentUser = null;
-let currentPage = 'home';
+// js/main.js
+// Core app: modal helpers, routing, login-gate wiring, basic page loader
 
-// API Configuration
-const API_CONFIG = {
-    googleBooks: {
-        baseUrl: 'https://www.googleapis.com/books/v1/volumes',
-        apiKey: 'AIzaSyAZ_14psPjeNrXVpP_szFHpzHfgCAc5Eds' 
-    },
-    openLibrary: {
-        baseUrl: 'https://openlibrary.org',
-        coversUrl: 'https://covers.openlibrary.org/b'
-    }
-};
+(function () {
+  // Cached DOM
+  const pageContent = document.getElementById('page-content');
+  const homePage = document.getElementById('home-page');
+  const authSelector = window.REQUIRES_LOGIN_SELECTORS || '.requires-login';
 
-// Sample data for fallback
-const sampleBookClubs = [
-    { id: 1, name: "Sci-Fi Enthusiasts", description: "Exploring the vast universe of science fiction literature", members: 42, image: "https://via.placeholder.com/300/143035/FFFFFF?text=Sci-Fi+Club" },
-    { id: 2, name: "Historical Fiction Lovers", description: "Journeying through time with historical novels", members: 38, image: "https://via.placeholder.com/300/4C6145/FFFFFF?text=Historical+Fiction" },
-    { id: 3, name: "Mystery & Thriller Club", description: "Unraveling mysteries one page at a time", members: 56, image: "https://via.placeholder.com/300/312021/FFFFFF?text=Mystery+Club" }
-];
-
-const sampleActivities = [
-    { user: "BookLover23", action: "rated", target: "The Midnight Library", rating: 5, time: "2 hours ago", avatar: "https://via.placeholder.com/40/74925D/FFFFFF?text=BL" },
-    { user: "PageTurner", action: "added", target: "Project Hail Mary", list: "To Be Read", time: "5 hours ago", avatar: "https://via.placeholder.com/40/4C6145/FFFFFF?text=PT" },
-    { user: "LiteraryExplorer", action: "reviewed", target: "Klara and the Sun", time: "1 day ago", avatar: "https://via.placeholder.com/40/143035/FFFFFF?text=LE" }
-];
-
-
-
-
-
-// DOM Elements
-const homePage = document.getElementById('home-page');
-const pageContent = document.getElementById('page-content');
-const navLinks = document.querySelectorAll('.nav-links a, .side-menu a');
-const modals = document.querySelectorAll('.modal');
-const closeModalButtons = document.querySelectorAll('.close-modal');
-
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded - initializing app');
-    
-    // Check authentication state
-    checkAuthState();
-    
-    // Initialize home page immediately
-    initHomePage();
-    setupEventListeners();
-    initAnimations();
-});
-
-// Check authentication state
-function checkAuthState() {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateUIForUser();
-    }
-}
-
-// Setup event listeners
-function setupEventListeners() {
-    console.log('Setting up event listeners');
-    
-    // Navigation
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = link.dataset.page;
-            
-            // Validate page name
-            if (!page || page === 'undefined') {
-                console.error('Invalid page name:', page);
-                return;
-            }
-            
-            // Skip if already on home page
-            if (page === 'home' && currentPage === 'home') {
-                return;
-            }
-            
-            // Check if user needs to be logged in
-            if ((page === 'profile' || page === 'notifications') && !currentUser) {
-                openModal('login-modal');
-                return;
-            }
-            
-            loadPage(page);
-            updateActiveNav(link);
-        });
-    });
-
-    // Modal handlers
-    closeModalButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            closeAllModals();
-        });
-    });
-
-    modals.forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeAllModals();
-            }
-        });
-    });
-
-    // Auth buttons
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => openModal('login-modal'));
-    }
-    
-    if (signupBtn) {
-        signupBtn.addEventListener('click', () => openModal('signup-modal'));
-    }
-
-    // Search modal button
-    const searchBtn = document.getElementById('search-modal-btn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal('search-modal');
-            setTimeout(() => {
-                const searchInput = document.getElementById('search-modal-input');
-                if (searchInput) searchInput.focus();
-            }, 100);
-        });
-    }
-}
-
-// Load page content (only for non-home pages)
-function loadPage(pageName) {
-    // Validate page name
-    if (!pageName || pageName === 'undefined') {
-        console.error('Invalid page name provided:', pageName);
-        showErrorMessage('Invalid page request');
-        return;
-    }
-    
-    console.log('Loading page:', pageName);
-    currentPage = pageName;
-
-    // Check if user needs to be logged in for protected pages
-    if ((pageName === 'profile' || pageName === 'notifications' || pageName === 'settings') && !currentUser) {
-        console.log('User not logged in, redirecting to login');
-        openModal('login-modal');
-        
-        // Show a message explaining why they need to login
-        showLoginRequiredMessage(pageName);
-        return;
-    }
-     
-    
-    if (pageName === 'home') {
-        // Show home page, hide other pages
-        if (homePage) homePage.style.display = 'block';
-        if (pageContent) {
-            pageContent.innerHTML = '';
-            pageContent.style.display = 'none';
-        }
-        
-        // Re-initialize home page
-        initHomePage();
-    } else {
-        // Hide home page, load other page
-        if (homePage) homePage.style.display = 'none';
-        if (pageContent) {
-            pageContent.style.display = 'block';
-            
-            fetch(`pages/${pageName}.html`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Page not found');
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    pageContent.innerHTML = html;
-                    
-                    // Load page-specific JavaScript
-                    loadPageScript(pageName);
-                })
-                .catch(error => {
-                    console.error('Error loading page:', error);
-                    pageContent.innerHTML = '<div class="content-box"><h2>Page Not Found</h2><p>The requested page could not be loaded.</p></div>';
-                });
-        }
-    }
-    
-    updateActiveNav();
-}
-
-// Add error message function
-function showErrorMessage(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ff4444;
-        color: white;
-        padding: 1rem;
-        border-radius: 4px;
-        z-index: 10001;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    `;
-    errorDiv.textContent = message;
-    
-    document.body.appendChild(errorDiv);
-    
-    setTimeout(() => {
-        if (document.body.contains(errorDiv)) {
-            document.body.removeChild(errorDiv);
-        }
-    }, 3000);
-}
-
-// Add this new function to show login required message
-function showLoginRequiredMessage(page) {
-    const pageNames = {
-        'profile': 'Profile',
-        'notifications': 'Notifications', 
-        'settings': 'Settings'
-    };
-    
-    // Create a temporary message
-    const messageDiv = document.createElement('div');
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: var(--orange);
-        color: white;
-        padding: 2rem;
-        border-radius: 8px;
-        z-index: 10001;
-        text-align: center;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-        max-width: 300px;
-    `;
-    messageDiv.innerHTML = `
-        <h3 style="margin-bottom: 1rem;">Login Required</h3>
-        <p style="margin-bottom: 1.5rem;">Please log in to access your ${pageNames[page]}.</p>
-        <button onclick="this.parentElement.remove()" style="
-            background: white; 
-            color: var(--orange); 
-            border: none; 
-            padding: 0.5rem 1rem; 
-            border-radius: 4px; 
-            cursor: pointer;
-        ">OK</button>
-    `;
-    
-    document.body.appendChild(messageDiv);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (document.body.contains(messageDiv)) {
-            document.body.removeChild(messageDiv);
-        }
-    }, 5000);
-}
-
-// Load page-specific JavaScript
-function loadPageScript(page) {
-    // Don't load home.js again since it's already loaded
-    if (page === 'home') return;
-    
-    const script = document.createElement('script');
-    script.src = `js/${page}.js`;
-    script.onload = () => {
-        console.log(`Loaded ${page} script`);
-        
-        // Initialize the page if the function exists
-        const initFunctionName = `init${page.charAt(0).toUpperCase() + page.slice(1)}Page`;
-        if (typeof window[initFunctionName] === 'function') {
-            window[initFunctionName]();
-        }
-    };
-    script.onerror = () => {
-        console.warn(`No script found for ${page}`);
-    };
-    document.head.appendChild(script);
-}
-
-// Update active navigation
-function updateActiveNav(clickedLink = null) {
-    // Update top nav
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.classList.remove('active');
-        if (link.dataset.page === currentPage) {
-            link.classList.add('active');
-        }
-    });
-
-    // Update side menu
-    document.querySelectorAll('.side-menu a').forEach(link => {
-        // Skip search button as it's not a page
-        if (link.id === 'search-modal-btn') return;
-        
-        link.classList.remove('active');
-        if (link.dataset.page === currentPage) {
-            link.classList.add('active');
-        }
-    });
-}
-
-// Modal functions
-function openModal(modalId) {
+  // Utility: open a modal by id (adds .show and aria)
+  function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'flex';
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    // trap focus lightly (simple)
+    const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable) focusable.focus();
+  }
+
+  // Utility: close modal element (by element or id)
+  function closeModal(modalOrId) {
+    const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  // Close all modals (generic)
+  function closeAllModals() {
+    document.querySelectorAll('.modal.show, .auth-modal.show').forEach(m => {
+      closeModal(m);
+    });
+  }
+
+  // Simple page loader: if pageName === 'home' show home, else try to fetch pages/<page>.html
+  async function loadPage(pageName) {
+    if (!pageName || pageName === 'home') {
+      // show home
+      if (homePage) homePage.style.display = '';
+      if (pageContent) pageContent.innerHTML = '';
+      // update nav active classes
+      updateActiveNav(pageName || 'home');
+      return;
     }
-}
 
-function closeAllModals() {
-    modals.forEach(modal => {
-        modal.style.display = 'none';
-    });
-}
+    // For protected pages, check auth (auth.js exports isLoggedIn)
+    if (['profile','settings','following','notifications'].includes(pageName) && window.auth && !window.auth.isLoggedIn()) {
+      // open login modal instead
+      if (window.auth && typeof window.auth.openAuthModal === 'function') {
+        window.auth.openAuthModal();
+      } else {
+        openModal('auth-modal');
+      }
+      return;
+    }
 
-// Animation functions
-function initAnimations() {
-    // Global animations
-    gsap.from('.logo', { duration: 1, y: -50, opacity: 0, ease: 'bounce' });
-    
-    // Navigation animation
-    gsap.from('.nav-links a', {
-        duration: 0.8,
-        y: -20,
-        opacity: 0,
-        stagger: 0.1,
-        delay: 0.5
-    });
-}
+    // hide home
+    if (homePage) homePage.style.display = 'none';
 
-// Initialize home page
-function initHomePage() {
-    console.log('Initializing home page');
-    
-    // Load books data
-    loadHottestReads();
-    loadFriendsReading();
-    initHomeAnimations();
-}
-
-// API Service Functions
-async function searchBooks(query, maxResults = 12) {
-    console.log( 'Searching for: "${query}')
-
+    // try to load page fragment
     try {
-        const response = await fetch(
-            `${API_CONFIG.googleBooks.baseUrl}?q=${encodeURIComponent(query)}&maxResults=${maxResults}&printType=books`
-        );
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch books');
+      const resp = await fetch(`pages/${pageName}.html`);
+      if (!resp.ok) throw new Error('Page not found');
+      const text = await resp.text();
+      // parse and extract meaningful fragment
+      const tmp = document.createElement('div');
+      tmp.innerHTML = text;
+      const fragment = tmp.querySelector(`.${pageName}-page`) || tmp.querySelector(`#${pageName}-page`) || tmp;
+      pageContent.innerHTML = fragment ? fragment.innerHTML : text;
+      updateActiveNav(pageName);
+      // attempt to load page-specific script
+      const scriptSrc = `js/${pageName}.js`;
+      // avoid duplicate insertion
+      if (!document.querySelector(`script[src="${scriptSrc}"]`)) {
+        const s = document.createElement('script');
+        s.src = scriptSrc;
+        s.defer = true;
+        s.onload = () => { console.log(`${pageName} script loaded`); };
+        document.body.appendChild(s);
+      }
+    } catch (err) {
+      console.warn('Load page error', err);
+      pageContent.innerHTML = `<div class="content-box"><h2>Page Not Found</h2><p>We couldn't load that page.</p></div>`;
+    }
+  }
+
+  // Update nav active states - both top nav and side menu
+  function updateActiveNav(page) {
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      if (a.dataset.page === page) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+    document.querySelectorAll('.side-menu .side-item').forEach(a => {
+      if (a.dataset.page === page) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+  }
+
+  function bindNavLinks() {
+    // top nav links
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
+        loadPage(page);
+      });
+    });
+
+    // side menu links
+    document.querySelectorAll('.side-menu .side-item').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
+        // special: search button has id
+        if (link.id === 'search-modal-btn') {
+          openModal('search-modal');
+          return;
         }
-        
-        const data = await response.json();
-        return transformGoogleBooksData(data.items || []);
-    } catch (error) {
-        console.error('Search error:', error);
-        // Fallback to sample data
-        return getFallbackBooks();
-    }
-}
-
-async function getTrendingBooks() {
-    // For trending books, search popular terms
-    const popularSearches = ['bestselling fiction', 'new releases', 'award winning'];
-    const randomSearch = popularSearches[Math.floor(Math.random() * popularSearches.length)];
-
-    try {
-        return await searchBooks(randomSearch, 8);
-    } catch (error) {
-        console.error('Trending books error:', error);
-        return getFallbackBooks();
-    }
-}
-
-async function getBookDetails(bookId) {
-    try {
-        const response = await fetch(`${API_CONFIG.googleBooks.baseUrl}/${bookId}`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch book details');
+        // check requires-login by class
+        if (link.classList.contains('requires-login')) {
+          // check auth
+          if (window.auth && !window.auth.isLoggedIn()) {
+            window.auth.openAuthModal();
+            return;
+          }
         }
-        
-        const data = await response.json();
-        return transformBookDetails(data);
-    } catch (error) {
-        console.error('Book details error:', error);
-        return null;
-    }
-}
-
-function transformGoogleBooksData(books) {
-    return books.map(book => {
-        const volumeInfo = book.volumeInfo;
-        return {
-            id: book.id,
-            title: volumeInfo.title || 'Unknown Title',
-            author: volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown Author',
-            cover: volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : getFallbackCover(volumeInfo.title),
-            rating: volumeInfo.averageRating || Math.random() * 2 + 3,
-            description: volumeInfo.description || 'No description available.',
-            publishedDate: volumeInfo.publishedDate,
-            pageCount: volumeInfo.pageCount,
-            genres: volumeInfo.categories || [],
-            publisher: volumeInfo.publisher,
-            language: volumeInfo.language
-        };
+        if (page) loadPage(page);
+      });
     });
-}
+  }
 
-function transformBookDetails(book) {
-    const volumeInfo = book.volumeInfo;
-    return {
-        id: book.id,
-        title: volumeInfo.title || 'Unknown Title',
-        author: volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Unknown Author',
-        cover: volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : getFallbackCover(volumeInfo.title),
-        rating: volumeInfo.averageRating || 0,
-        description: volumeInfo.description || 'No description available.',
-        publishedDate: volumeInfo.publishedDate,
-        pageCount: volumeInfo.pageCount,
-        genres: volumeInfo.categories || [],
-        publisher: volumeInfo.publisher,
-        language: volumeInfo.language,
-        isbn: volumeInfo.industryIdentifiers ? volumeInfo.industryIdentifiers[0]?.identifier : null
-    };
-}
+  // Wire modal close buttons (elements with .close-modal and .close-auth-modal)
+  function wireModalControls() {
+    document.addEventListener('click', (e) => {
+      // close-modal buttons
+      if (e.target.matches('.close-modal') || e.target.closest('.close-modal')) {
+        const modal = e.target.closest('.modal');
+        if (modal) closeModal(modal);
+      }
+      // close auth modal
+      if (e.target.matches('.close-auth-modal') || e.target.closest('.close-auth-modal')) {
+        const auth = document.querySelector('.auth-modal');
+        if (auth) closeModal(auth);
+      }
+    });
 
-function getFallbackCover(title) {
-    const colors = ['74925D', '4C6145', '143035', '312021', 'F08E37'];
-    const color = colors[title.length % colors.length];
-    return `https://via.placeholder.com/150/${color}/FFFFFF?text=${encodeURIComponent(title.substring(0, 20))}`;
-}
+    // click outside modal content closes it
+    document.querySelectorAll('.modal, .auth-modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(modal);
+      });
+    });
 
-function getFallbackBooks() {
-    return [
-        {
-            id: '1',
-            title: "The Midnight Library",
-            author: "Matt Haig",
-            cover: getFallbackCover("The Midnight Library"),
-            rating: 4.5,
-            description: "A novel about a library that contains books that let you experience the lives you might have lived."
-        },
-        {
-            id: '2',
-            title: "Project Hail Mary",
-            author: "Andy Weir",
-            cover: getFallbackCover("Project Hail Mary"),
-            rating: 4.7,
-            description: "A lone astronaut must save the earth from disaster in this incredible new science-based thriller."
-        },
-        {
-            id: '3',
-            title: "Klara and the Sun",
-            author: "Kazuo Ishiguro",
-            cover: getFallbackCover("Klara and the Sun"),
-            rating: 4.2,
-            description: "From the bestselling author of Never Let Me Go and The Remains of the Day."
-        },
-        {
-            id: '4',
-            title: "The Invisible Life of Addie LaRue",
-            author: "V.E. Schwab",
-            cover: getFallbackCover("The Invisible Life of Addie LaRue"),
-            rating: 4.3,
-            description: "A Life No One Will Remember. A Story You Will Never Forget."
+    // Escape closes modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAllModals();
+    });
+  }
+
+  // Init app on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    bindNavLinks();
+    wireModalControls();
+
+    // If auth module exists, set a simple listener to update nav when login state changes
+    if (window.auth && typeof window.auth.onAuthChange === 'function') {
+      window.auth.onAuthChange((user) => {
+        if (user) {
+          // show quick UI change: replace login buttons with user name + logout (if you want)
+          const ua = document.querySelector('.user-actions');
+          if (ua) {
+            ua.innerHTML = `<span style="font-weight:700;color:var(--dark-azure);margin-right:.6rem;">${user.name || user.email}</span>
+                            <button id="logout-btn" class="cta">LOG OUT</button>`;
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.addEventListener('click', () => {
+              window.auth.logout();
+              // refresh UI back to login/signup
+              const ua2 = document.querySelector('.user-actions');
+              if (ua2) ua2.innerHTML = `<button id="open-login-modal" class="cta">LOG IN</button><button id="open-signup-modal" class="cta">SIGN UP</button>`;
+              // re-bind auth buttons
+              bindAuthOpeners();
+            });
+          }
+        } else {
+          // clear to default
+          const ua = document.querySelector('.user-actions');
+          if (ua) ua.innerHTML = `<button id="open-login-modal" class="cta">LOG IN</button><button id="open-signup-modal" class="cta">SIGN UP</button>`;
+          bindAuthOpeners();
         }
-    ];
-}
+      });
+    }
 
-// Book loading functions
-async function loadHottestReads() {
-    const container = document.getElementById('hottest-reads');
-    if (!container) {
-        console.error('Hottest reads container not found');
-        return;
-    }
-    
-    console.log('Loading hottest reads');
-    
-    // Show loading state
-    container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--orange);"></i>
-            <p>Loading hottest reads...</p>
-        </div>
-    `;
-    
-    try {
-        const trendingBooks = await getTrendingBooks();
-        displayBooks(container, trendingBooks);
-    } catch (error) {
-        console.error('Error loading hottest reads:', error);
-        container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Failed to load books. Please try again.</p>';
-    }
-}
+    bindAuthOpeners();
 
-async function loadFriendsReading() {
-    const container = document.getElementById('friends-reading');
-    if (!container) {
-        console.error('Friends reading container not found');
-        return;
+    // If a global home initializer exists, call it
+    if (window.home && typeof window.home.initHome === 'function') {
+      window.home.initHome();
     }
-    
-    console.log('Loading friends reading');
-    
-    try {
-        const friendsBooks = await searchBooks('popular fiction', 6);
-        displayBooks(container, friendsBooks);
-    } catch (error) {
-        console.error('Error loading friends reading:', error);
-        container.innerHTML = '<p>Unable to load friends\' reading</p>';
-    }
-}
+  });
 
-function displayBooks(container, books) {
-    if (!books || books.length === 0) {
-        container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">No books found</p>`;
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    books.forEach(book => {
-        const bookElement = createBookElement(book);
-        container.appendChild(bookElement);
+  // Bind openers for the auth modal (buttons in top nav)
+  function bindAuthOpeners() {
+    const openLogin = document.getElementById('open-login-modal');
+    const openSignup = document.getElementById('open-signup-modal');
+    if (openLogin) openLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.auth && typeof window.auth.openAuthModal === 'function') {
+        window.auth.openAuthModal('login');
+      } else openModal('auth-modal');
     });
-    
-    // Animate books
-    gsap.from('.book-card', {
-        duration: 0.8,
-        y: 50,
-        opacity: 0,
-        stagger: 0.1,
-        ease: 'back.out(1.7)'
+    if (openSignup) openSignup.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.auth && typeof window.auth.openAuthModal === 'function') {
+        window.auth.openAuthModal('signup');
+      } else openModal('auth-modal');
     });
-}
+  }
 
-// Utility functions
-function createBookElement(book) {
-    const bookElement = document.createElement('div');
-    bookElement.className = 'book-card slide-up';
-    bookElement.innerHTML = `
-        <img src="${book.cover}" alt="${book.title}" class="book-cover">
-        <div class="book-info">
-            <div class="book-title">${book.title}</div>
-            <div class="book-author">${book.author}</div>
-            ${book.rating ? `<div class="book-rating">${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 ? '½' : ''} ${book.rating.toFixed(1)}</div>` : ''}
-        </div>
-    `;
-    
-    bookElement.addEventListener('click', () => openBookModal(book));
-    return bookElement;
-}
+  // Expose certain functions globally for other modules
+  window.app = {
+    openModal,
+    closeModal,
+    closeAllModals,
+    loadPage,
+    updateActiveNav,
+  };
+})();
 
-function createBookClubElement(club) {
-    const clubElement = document.createElement('div');
-    clubElement.className = 'bookclub-card slide-up';
-    clubElement.innerHTML = `
-        <img src="${club.image}" alt="${club.name}" class="bookclub-image">
-        <div class="bookclub-info">
-            <div class="bookclub-name">${club.name}</div>
-            <div class="bookclub-description">${club.description}</div>
-            <div class="bookclub-members">${club.members} members</div>
-        </div>
-    `;
-    return clubElement;
-}
-
-function createActivityElement(activity) {
-    const activityElement = document.createElement('div');
-    activityElement.className = 'activity-card fade-in';
-    
-    let actionText = '';
-    if (activity.action === 'rated') {
-        actionText = `rated <strong>${activity.target}</strong> ${'★'.repeat(activity.rating)}`;
-    } else if (activity.action === 'added') {
-        actionText = `added <strong>${activity.target}</strong> to ${activity.list}`;
-    } else if (activity.action === 'reviewed') {
-        actionText = `reviewed <strong>${activity.target}</strong>`;
-    } else if (activity.action === 'joined') {
-        actionText = `joined <strong>${activity.target}</strong>`;
-    }
-    
-    activityElement.innerHTML = `
-        <div class="activity-header">
-            <img src="${activity.avatar}" alt="${activity.user}" class="activity-avatar">
-            <div>
-                <div class="activity-user">${activity.user}</div>
-                <div class="activity-time">${activity.time}</div>
-            </div>
-        </div>
-        <div class="activity-content">
-            ${actionText}
-        </div>
-    `;
-    return activityElement;
-}
-
-async function openBookModal(book) {
-    console.log('Opening book modal:', book.title);
-    
-    const modalTitle = document.getElementById('book-modal-title');
-    const modalContent = document.getElementById('book-modal-content');
-    
-    if (modalTitle) modalTitle.textContent = book.title;
-    
-    if (modalContent) {
-        // Show loading state
-        modalContent.innerHTML = `
-            <div style="text-align: center; padding: 2rem;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--orange);"></i>
-                <p>Loading book details...</p>
-            </div>
-        `;
-        
-        openModal('book-modal');
-        
-        try {
-            // Try to get more detailed information
-            let detailedBook = book;
-            if (book.id && !book.id.startsWith('fallback-')) {
-                const bookDetails = await getBookDetails(book.id);
-                if (bookDetails) {
-                    detailedBook = bookDetails;
-                }
-            }
-            
-            displayBookDetails(detailedBook);
-        } catch (error) {
-            console.error('Error loading book details:', error);
-            displayBookDetails(book); // Fallback to basic info
-        }
-    }
-}
-
-function displayBookDetails(book) {
-    const modalContent = document.getElementById('book-modal-content');
-    
-    modalContent.innerHTML = `
-        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <img src="${book.cover}" alt="${book.title}" style="width: 150px; height: 200px; object-fit: cover; border-radius: 8px;">
-            <div style="flex: 1; min-width: 250px;">
-                <h4 style="margin-bottom: 0.5rem; color: var(--dark-azure);">${book.title}</h4>
-                <p style="color: var(--dark-grey); margin-bottom: 1rem;">by ${book.author}</p>
-                
-                ${book.rating ? `<p><strong>Rating:</strong> ${'★'.repeat(Math.floor(book.rating))}${book.rating % 1 >= 0.5 ? '½' : ''} ${book.rating.toFixed(1)}/5</p>` : ''}
-                ${book.publishedDate ? `<p><strong>Published:</strong> ${new Date(book.publishedDate).getFullYear()}</p>` : ''}
-                ${book.pageCount ? `<p><strong>Pages:</strong> ${book.pageCount}</p>` : ''}
-                ${book.publisher ? `<p><strong>Publisher:</strong> ${book.publisher}</p>` : ''}
-                ${book.language ? `<p><strong>Language:</strong> ${book.language.toUpperCase()}</p>` : ''}
-                
-                ${book.genres && book.genres.length > 0 ? `
-                    <p><strong>Genres:</strong> ${book.genres.slice(0, 3).join(', ')}</p>
-                ` : ''}
-            </div>
-        </div>
-        
-        ${book.description && book.description !== 'No description available.' ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="margin-bottom: 0.5rem;">Description</h4>
-                <p style="line-height: 1.6; max-height: 200px; overflow-y: auto; padding: 1rem; background: var(--light-grey); border-radius: 4px;">
-                    ${book.description}
-                </p>
-            </div>
-        ` : ''}
-        
-        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <button class="cta" style="background: var(--orange);"><i class="fas fa-heart"></i> Like</button>
-            <button class="cta" style="background: var(--dark-azure);"><i class="fas fa-star"></i> Rate</button>
-            <button class="cta" style="background: var(--grey-green);"><i class="fas fa-list"></i> Add to List</button>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Write a Review</label>
-            <textarea class="form-input" rows="4" placeholder="Share your thoughts about this book..."></textarea>
-        </div>
-        <button class="cta" style="width: 100%; background: var(--dark-grey-brown);">Submit Review</button>
-    `;
-}
-
-function initHomeAnimations() {
-    console.log('Initializing home animations');
-    
-    // Timeline animation for section headers
-    const tl = gsap.timeline();
-    tl.from('.section-title', {
-        duration: 1,
-        x: -100,
-        opacity: 0,
-        stagger: 0.3
-    });
-    
-    // ScrollTrigger animation for content boxes
-    gsap.utils.toArray('.content-box').forEach(box => {
-        gsap.from(box, {
-            scrollTrigger: {
-                trigger: box,
-                start: 'top 80%',
-                end: 'bottom 20%',
-                toggleActions: 'play none none reverse'
-            },
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            ease: 'power2.out'
-        });
-    });
-    
-    // Motion path animation for floating books icon
-    const floatingBook = document.createElement('div');
-    floatingBook.innerHTML = '<i class="fas fa-book" style="font-size: 2rem; color: var(--orange);"></i>';
-    floatingBook.style.position = 'fixed';
-    floatingBook.style.bottom = '20px';
-    floatingBook.style.right = '20px';
-    floatingBook.style.zIndex = '1000';
-    document.body.appendChild(floatingBook);
-    
-    gsap.to(floatingBook, {
-        motionPath: {
-            path: [{x: 0, y: 0}, {x: -10, y: -20}, {x: 0, y: -40}, {x: 10, y: -20}, {x: 0, y: 0}],
-            curviness: 1.5
-        },
-        duration: 3,
-        repeat: -1,
-        ease: 'sine.inOut'
-    });
-}
-
-// Form validation utility
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-function showError(elementId, message) {
-    const errorElement = document.getElementById(elementId);
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-    }
-}
-
-function hideError(elementId) {
-    const errorElement = document.getElementById(elementId);
-    if (errorElement) {
-        errorElement.style.display = 'none';
-    }
-}
-
-function showSuccess(elementId, message) {
-    const successElement = document.getElementById(elementId);
-    if (successElement) {
-        successElement.textContent = message;
-        successElement.style.display = 'block';
-        
-        setTimeout(() => {
-            successElement.style.display = 'none';
-        }, 3000);
-    }
-}
-
-// Update UI based on user authentication
-function updateUIForUser() {
-    const userActions = document.querySelector('.user-actions');
-    if (!userActions) return;
-    
-    if (currentUser) {
-        userActions.innerHTML = `
-            <span style="margin-right: 1rem;">Hello, ${currentUser.name}</span>
-            <button id="logout-btn">LOG OUT</button>
-        `;
-        
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-    } else {
-        userActions.innerHTML = `
-            <button id="login-btn">LOG IN</button>
-            <button id="signup-btn">SIGN UP</button>
-        `;
-        
-        // Re-attach event listeners
-        document.getElementById('login-btn').addEventListener('click', () => openModal('login-modal'));
-        document.getElementById('signup-btn').addEventListener('click', () => openModal('signup-modal'));
-    }
-}
-
-function handleLogout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateUIForUser();
-    loadPage('home');
-}

@@ -1,152 +1,163 @@
-// Authentication functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-    
-    if (signupForm) {
-        signupForm.addEventListener('submit', handleSignup);
-    }
-});
+// js/auth.js
+// Simple client-side auth stub: login/signup UI, session saved to localStorage.
+// This is NOT secure auth for production — it's a local stub to gate UI.
 
-function handleLogin(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
-    
-    // Simple validation
-    let isValid = true;
-    
-    if (!username) {
-        showError('login-username-error', 'Username or email is required');
-        isValid = false;
-    } else {
-        hideError('login-username-error');
-    }
-    
-    if (!password) {
-        showError('login-password-error', 'Password is required');
-        isValid = false;
-    } else {
-        hideError('login-password-error');
-    }
-    
-    if (isValid) {
-        // Simulate API call
-        simulateAPICall('/api/login', { username, password })
-            .then(userData => {
-                currentUser = userData;
-                localStorage.setItem('currentUser', JSON.stringify(userData));
-                
-                showSuccess('login-success', 'Login successful!');
-                
-                setTimeout(() => {
-                    closeAllModals();
-                    updateUIForUser();
-                    // Reload current page to update content
-                    if (currentPage === 'profile' || currentPage === 'notifications') {
-                        loadPage(currentPage);
-                    }
-                }, 1500);
-            })
-            .catch(error => {
-                showError('login-username-error', 'Invalid credentials');
-            });
-    }
-}
+(function () {
+  const AUTH_KEY = 'biblio_current_user_v1';
+  const authModal = document.getElementById('auth-modal');
+  const tabLogin = document.getElementById('tab-login');
+  const tabSignup = document.getElementById('tab-signup');
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const closeAuthBtns = document.querySelectorAll('.close-auth-modal');
 
-function handleSignup(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('signup-name').value;
-    const username = document.getElementById('signup-username').value;
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    const confirmPassword = document.getElementById('signup-confirm').value;
-    
-    // Validation
-    let isValid = true;
-    
-    if (!name) {
-        showError('signup-name-error', 'Full name is required');
-        isValid = false;
-    } else {
-        hideError('signup-name-error');
-    }
-    
-    if (!username) {
-        showError('signup-username-error', 'Username is required');
-        isValid = false;
-    } else if (username.length < 3) {
-        showError('signup-username-error', 'Username must be at least 3 characters');
-        isValid = false;
-    } else {
-        hideError('signup-username-error');
-    }
-    
-    if (!email || !validateEmail(email)) {
-        showError('signup-email-error', 'Valid email is required');
-        isValid = false;
-    } else {
-        hideError('signup-email-error');
-    }
-    
-    if (!password || password.length < 6) {
-        showError('signup-password-error', 'Password must be at least 6 characters');
-        isValid = false;
-    } else {
-        hideError('signup-password-error');
-    }
-    
-    if (password !== confirmPassword) {
-        showError('signup-confirm-error', 'Passwords do not match');
-        isValid = false;
-    } else {
-        hideError('signup-confirm-error');
-    }
-    
-    if (isValid) {
-        // Simulate API call
-        simulateAPICall('/api/signup', { name, username, email, password })
-            .then(userData => {
-                currentUser = userData;
-                localStorage.setItem('currentUser', JSON.stringify(userData));
-                
-                showSuccess('signup-success', 'Account created successfully!');
-                
-                setTimeout(() => {
-                    closeAllModals();
-                    updateUIForUser();
-                    loadPage('profile');
-                }, 1500);
-            })
-            .catch(error => {
-                showError('signup-username-error', 'Username or email already exists');
-            });
-    }
-}
+  // Local event listeners array for auth change
+  let listeners = [];
 
-function simulateAPICall(endpoint, data) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Simulate successful login/signup for demo
-            if (endpoint === '/api/login' || endpoint === '/api/signup') {
-                resolve({
-                    id: 1,
-                    username: data.username,
-                    name: data.name || data.username,
-                    email: data.email,
-                    joinDate: new Date().toISOString(),
-                    followers: 127,
-                    following: 89
-                });
-            } else {
-                reject(new Error('Authentication failed'));
-            }
-        }, 1000);
+  function notify(user) {
+    listeners.forEach(fn => {
+      try { fn(user); } catch (e) { console.warn(e); }
     });
-}
+  }
+
+  function saveUser(user) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    notify(user);
+  }
+
+  function clearUser() {
+    localStorage.removeItem(AUTH_KEY);
+    notify(null);
+  }
+
+  function getUser() {
+    try {
+      const raw = localStorage.getItem(AUTH_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isLoggedIn() {
+    return !!getUser();
+  }
+
+  // Show auth modal; optional tab param 'login'|'signup'
+  function openAuthModal(tab) {
+    if (!authModal) return;
+    authModal.classList.add('show');
+    authModal.setAttribute('aria-hidden', 'false');
+    if (tab === 'signup') showSignup();
+    else showLogin();
+    // focus first input
+    setTimeout(() => {
+      const first = authModal.querySelector('input');
+      if (first) first.focus();
+    }, 50);
+  }
+
+  function closeAuthModal() {
+    if (!authModal) return;
+    authModal.classList.remove('show');
+    authModal.setAttribute('aria-hidden', 'true');
+  }
+
+  // Tab controls
+  function showLogin() {
+    if (tabLogin) tabLogin.classList.add('active');
+    if (tabSignup) tabSignup.classList.remove('active');
+    if (loginForm) loginForm.classList.remove('hidden');
+    if (signupForm) signupForm.classList.add('hidden');
+  }
+  function showSignup() {
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabSignup) tabSignup.classList.add('active');
+    if (loginForm) loginForm.classList.add('hidden');
+    if (signupForm) signupForm.classList.remove('hidden');
+  }
+
+  // Form handlers (simple client-side stubs)
+  function handleLoginSubmit(e) {
+    e.preventDefault();
+    const email = (document.getElementById('login-email') || {}).value || '';
+    const pass = (document.getElementById('login-password') || {}).value || '';
+    if (!email || !pass) {
+      alert('Please enter email and password (this demo uses any credentials).');
+      return;
+    }
+    // In demo, we accept any combo and store a simple user object
+    const user = { email, name: email.split('@')[0] || 'Reader' };
+    saveUser(user);
+    closeAuthModal();
+    // call any UI refresh (main.js listens)
+  }
+
+  function handleSignupSubmit(e) {
+    e.preventDefault();
+    const name = (document.getElementById('signup-name') || {}).value || '';
+    const email = (document.getElementById('signup-email') || {}).value || '';
+    const pass = (document.getElementById('signup-password') || {}).value || '';
+    if (!name || !email || !pass) {
+      alert('Please complete the sign up form.');
+      return;
+    }
+    // Demo: pretend account created and log in
+    const user = { email, name };
+    saveUser(user);
+    closeAuthModal();
+  }
+
+  // Logout
+  function logout() {
+    clearUser();
+    // optionally refresh UI
+  }
+
+  // Public API: onAuthChange(fn)
+  function onAuthChange(fn) {
+    if (typeof fn === 'function') listeners.push(fn);
+  }
+
+  // Boot: wire UI events
+  function init() {
+    // restore session and notify
+    const existing = getUser();
+    notify(existing);
+
+    // tab clicks
+    if (tabLogin) tabLogin.addEventListener('click', showLogin);
+    if (tabSignup) tabSignup.addEventListener('click', showSignup);
+
+    // form submits
+    if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
+    if (signupForm) signupForm.addEventListener('submit', handleSignupSubmit);
+
+    // close auth modal buttons
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.close-auth-modal')) closeAuthModal();
+    });
+
+    // click outside content closes
+    if (authModal) {
+      authModal.addEventListener('click', (e) => {
+        if (e.target === authModal) closeAuthModal();
+      });
+    }
+  }
+
+  // Expose API
+  window.auth = {
+    init,
+    openAuthModal,
+    closeAuthModal,
+    isLoggedIn,
+    getUser,
+    logout,
+    onAuthChange,
+  };
+
+  // Auto-init
+  document.addEventListener('DOMContentLoaded', init);
+})();
+

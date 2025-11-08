@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblio — Book Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&family=Crimson+Pro:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">📚</div>
+      </div>
+      <nav class="side-icons">
+        <button class="icon-btn" aria-label="Home" onclick="location.href='index.html'">🏠</button>
+        <button class="icon-btn active" aria-label="Discover" onclick="location.href='discover.html'">🔍</button>
+        <button class="icon-btn" aria-label="Bookclubs">📖</button>
+        <button class="icon-btn" aria-label="Notifications">🔔</button>
+        <button class="icon-btn" aria-label="Profile" onclick="location.href='profile.html'">👤</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-nav">
+        <div class="nav-left">
+          <h1 class="brand">Biblio</h1>
+          <nav class="top-links">
+            <a href="index.html" class="pill">Home</a>
+            <a href="discover.html" class="pill active">Discover</a>
+            <a href="#" class="pill">Bookclubs</a>
+            <a href="profile.html" class="pill">Following</a>
+          </nav>
+        </div>
+      </header>
+
+      <section class="book-detail card">
+        <div id="book-content">
+          <p class="muted">Loading book...</p>
+        </div>
+      </section>
+
+      <footer class="app-footer">© Biblio — Built with warmth</footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
