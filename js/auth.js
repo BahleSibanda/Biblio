@@ -4,10 +4,31 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 
-const auth = window.auth;  
+// ✅ Your Firebase configuration
+const firebaseConfig = {
+  // put your Firebase config keys here
+};
+
+// ✅ Initialize Firebase app and get auth
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// ✅ Export what other files need
+export {
+  auth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile
+};
+
+
 
 // SIGN UP
 const signupForm = document.getElementById("signup-form");
@@ -20,45 +41,31 @@ if (signupForm) {
     const password = document.getElementById("signup-password").value;
 
     try {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-  signupForm.reset();
+      // ✅ Update display name
+      await updateProfile(user, { displayName: name });
 
-  // ✅ Animate modal closing
-  const authModal = document.getElementById("auth-modal");
-  gsap.to(authModal, {
-    opacity: 0,
-    duration: 0.5,
-    onComplete: () => {
-      authModal.style.display = "none";
-      authModal.setAttribute("aria-hidden", "true");
+      alert(`Signup successful! Welcome, ${name}.`);
+      signupForm.reset();
+
+      // ✅ Hide modal smoothly
+      gsap.to("#auth-modal", {
+        opacity: 0,
+        y: -20,
+        duration: 0.4,
+        onComplete: () => {
+          document.getElementById("auth-modal").style.display = "none";
+        }
+      });
+    } catch (err) {
+      alert("Signup failed: " + err.message);
+      console.error(err);
     }
   });
-
-  // ✅ Show animated toast message
-  const toast = document.getElementById("toast-message");
-  toast.textContent = `Welcome to Biblio, ${name}!`;
-  gsap.to(toast, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
-  
-  // Fade out after 3 seconds
-  gsap.to(toast, { opacity: 0, delay: 3, duration: 0.5, ease: "power2.in" });
-
-} catch (err) {
-  console.error(err);
-  const toast = document.getElementById("toast-message");
-  toast.textContent = `Signup failed: ${err.message}`;
-  toast.style.backgroundColor = "#E53935"; // red
-  gsap.to(toast, { opacity: 1, y: 0, duration: 0.5 });
-  gsap.to(toast, { opacity: 0, delay: 3, duration: 0.5 });
 }
-
    
-  });
-}
-
-      
-
 // LOGIN
 const loginForm = document.getElementById("login-form");
 if (loginForm) {
@@ -103,16 +110,51 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+import { auth } from "./firebase.js"; // make sure auth is imported correctly
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
+const signupLink = document.getElementById("signup-link");
+const loginLink = document.getElementById("login-link");
+const userGreeting = document.getElementById("user-greeting");
 
-// LOGOUT
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ✅ Someone is logged in
+    const userName = user.displayName || user.email.split('@')[0];
+
+    // Hide login/signup links
+    signupLink.style.display = "none";
+    loginLink.style.display = "none";
+
+    // Show greeting
+    userGreeting.style.display = "inline";
+    userGreeting.textContent = `Hey, ${userName}! 👋`;
+  } else {
+    // ❌ User signed out
+    signupLink.style.display = "inline";
+    loginLink.style.display = "inline";
+    userGreeting.style.display = "none";
+  }
+});
+
+//LOGOUT
 const logoutBtn = document.getElementById("logout-btn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    alert("Logged out!");
+    try {
+      await signOut(auth);
+      alert("You've logged out successfully!");
+      // Optionally hide the greeting immediately:
+      document.getElementById("user-greeting")?.classList.add("hidden");
+      document.getElementById("open-login-modal")?.classList.remove("hidden");
+      document.getElementById("open-signup-modal")?.classList.remove("hidden");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   });
 }
+
+
 
 // TRACK STATE
 onAuthStateChanged(auth, (user) => {

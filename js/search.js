@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSearchModal();
 });
 
+function hideError() {
+  // hide any error messages (you can improve later)
+  const errorBox = document.querySelector('.error-message');
+  if (errorBox) errorBox.style.display = 'none';
+}
+
+
 function setupSearchModal() {
     const searchInput = document.getElementById('search-modal-input');
     /*const searchError = document.getElementById('search-modal-error');*/

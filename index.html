@@ -34,9 +34,16 @@
         </div>
 
         <div class="user-actions">
-            <button id="open-login-modal" class="cta">LOG IN</button>
-            <button id="open-signup-modal" class="cta">SIGN UP</button>
-        </div>
+    <button id="open-login-modal" class="cta">LOG IN</button>
+    <button id="open-signup-modal" class="cta">SIGN UP</button>
+    
+    <div id="user-greeting" class="hidden">
+        <span id="user-name"></span>
+        <button id="logout-btn" class="cta small">LOG OUT</button>
+    </div>
+</div>
+
+       
     </nav>
 
 
@@ -252,8 +259,7 @@
 
 
 <!-- Then load your other scripts -->
-<script src="js/main.js"></script>
-<script type="module" src="js/auth.js"></script>
+<script src="module" src="js/main.js"></script>
 <script src="js/search.js"></script>
 <script src="js/home.js"></script>
 

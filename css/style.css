@@ -276,6 +276,37 @@ button{font-family:inherit}
   z-index: 9999;
 }
 
+/* Hide elements by default */
+.hidden {
+  display: none !important;
+}
+
+/* Optional: make greeting look nice */
+#user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+#logout-btn {
+  background: #ff6961;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#logout-btn:hover {
+  background: #e85b52;
+}
+
+.auth-form.hidden {
+  display: none;
+}
+
 
 /* Allow devs to easily customize side icons colors via classes */
 .side-item.custom-orange{background:linear-gradient(45deg,var(--orange), #d9741b); color:#fff}
