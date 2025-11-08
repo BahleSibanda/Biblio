@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function setupSearchModal() {
     const searchInput = document.getElementById('search-modal-input');
-    const searchError = document.getElementById('search-modal-error');
+    /*const searchError = document.getElementById('search-modal-error');*/
     
     if (searchInput) {
         // Real-time search with debouncing
@@ -18,13 +18,13 @@ function setupSearchModal() {
         });
         
         // Form validation
-        searchInput.addEventListener('blur', function() {
+        /*searchInput.addEventListener('blur', function() {
             if (this.value.length > 0 && this.value.length < 2) {
                 showError('search-modal-error', 'Search term must be at least 2 characters');
             } else {
                 hideError('search-modal-error');
             }
-        });
+        });*/
         
         // Clear results when modal opens
         document.getElementById('search-modal').addEventListener('click', function(e) {

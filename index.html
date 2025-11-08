@@ -199,7 +199,7 @@
             </form>
 
             <!-- SIGNUP FORM -->
-            <form id="signup-form" class="auth-form hidden">
+            <form id="signup-form" class="auth-form">
                 <h3>Create an account</h3>
                 <input type="text" id="signup-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email" required>
@@ -217,18 +217,50 @@
     </script>
 
 
-
-
     <!-- ✅ JS LIBRARIES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
 
-    <!-- ✅ YOUR SCRIPTS -->
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/home.js"></script>
+    <!-- Initialize Firebase FIRST -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
+    authDomain: "biblio-social-3399.firebaseapp.com",
+    projectId: "biblio-social-3399",
+    storageBucket: "biblio-social-3399.appspot.com",  // ✅ fixed
+    messagingSenderId: "1086617986269",
+    appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
+    measurementId: "G-CWPPWJ212R"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ✅ Make Firebase objects available globally
+  window.auth = auth;
+  window.db = db;
+  window.firebaseApp = app;
+</script>
+
+
+<!-- Then load your other scripts -->
+<script src="js/main.js"></script>
+<script type="module" src="js/auth.js"></script>
+<script src="js/search.js"></script>
+<script src="js/home.js"></script>
+
+
+
+
+
 
 </body>
 </html>

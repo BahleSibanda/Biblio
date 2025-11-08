@@ -1,163 +1,107 @@
 // js/auth.js
-// Simple client-side auth stub: login/signup UI, session saved to localStorage.
-// This is NOT secure auth for production — it's a local stub to gate UI.
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-(function () {
-  const AUTH_KEY = 'biblio_current_user_v1';
-  const authModal = document.getElementById('auth-modal');
-  const tabLogin = document.getElementById('tab-login');
-  const tabSignup = document.getElementById('tab-signup');
-  const loginForm = document.getElementById('login-form');
-  const signupForm = document.getElementById('signup-form');
-  const closeAuthBtns = document.querySelectorAll('.close-auth-modal');
+const auth = window.auth;  
 
-  // Local event listeners array for auth change
-  let listeners = [];
+// SIGN UP
+const signupForm = document.getElementById("signup-form");
+if (signupForm) {
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  function notify(user) {
-    listeners.forEach(fn => {
-      try { fn(user); } catch (e) { console.warn(e); }
-    });
+    const name = document.getElementById("signup-name").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+
+try {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+
+  alert(`Signup successful! Welcome, ${name}.`);
+  signupForm.reset();
+
+  // ✅ Close the modal
+  const authModal = document.getElementById("auth-modal");
+  if (authModal) {
+    authModal.setAttribute("aria-hidden", "true");
+    authModal.style.display = "none";
   }
+} catch (err) {
+  alert("Signup failed: " + err.message);
+  console.error(err);
+}
 
-  function saveUser(user) {
-    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-    notify(user);
-  }
+      
 
-  function clearUser() {
-    localStorage.removeItem(AUTH_KEY);
-    notify(null);
-  }
+// LOGIN
+const loginForm = document.getElementById("login-form");
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  function getUser() {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
     try {
-      const raw = localStorage.getItem(AUTH_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Login successful!");
+      loginForm.reset();
+    } catch (err) {
+      alert("Login failed: " + err.message);
+      console.error(err);
     }
-  }
+  });
+}
 
-  function isLoggedIn() {
-    return !!getUser();
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const loginFormEl = document.getElementById("login-form");
+  const signupFormEl = document.getElementById("signup-form");
+  const tabLogin = document.getElementById("tab-login");
+  const tabSignup = document.getElementById("tab-signup");
 
-  // Show auth modal; optional tab param 'login'|'signup'
-  function openAuthModal(tab) {
-    if (!authModal) return;
-    authModal.classList.add('show');
-    authModal.setAttribute('aria-hidden', 'false');
-    if (tab === 'signup') showSignup();
-    else showLogin();
-    // focus first input
-    setTimeout(() => {
-      const first = authModal.querySelector('input');
-      if (first) first.focus();
-    }, 50);
-  }
-
-  function closeAuthModal() {
-    if (!authModal) return;
-    authModal.classList.remove('show');
-    authModal.setAttribute('aria-hidden', 'true');
-  }
-
-  // Tab controls
-  function showLogin() {
-    if (tabLogin) tabLogin.classList.add('active');
-    if (tabSignup) tabSignup.classList.remove('active');
-    if (loginForm) loginForm.classList.remove('hidden');
-    if (signupForm) signupForm.classList.add('hidden');
-  }
-  function showSignup() {
-    if (tabLogin) tabLogin.classList.remove('active');
-    if (tabSignup) tabSignup.classList.add('active');
-    if (loginForm) loginForm.classList.add('hidden');
-    if (signupForm) signupForm.classList.remove('hidden');
-  }
-
-  // Form handlers (simple client-side stubs)
-  function handleLoginSubmit(e) {
-    e.preventDefault();
-    const email = (document.getElementById('login-email') || {}).value || '';
-    const pass = (document.getElementById('login-password') || {}).value || '';
-    if (!email || !pass) {
-      alert('Please enter email and password (this demo uses any credentials).');
-      return;
-    }
-    // In demo, we accept any combo and store a simple user object
-    const user = { email, name: email.split('@')[0] || 'Reader' };
-    saveUser(user);
-    closeAuthModal();
-    // call any UI refresh (main.js listens)
-  }
-
-  function handleSignupSubmit(e) {
-    e.preventDefault();
-    const name = (document.getElementById('signup-name') || {}).value || '';
-    const email = (document.getElementById('signup-email') || {}).value || '';
-    const pass = (document.getElementById('signup-password') || {}).value || '';
-    if (!name || !email || !pass) {
-      alert('Please complete the sign up form.');
-      return;
-    }
-    // Demo: pretend account created and log in
-    const user = { email, name };
-    saveUser(user);
-    closeAuthModal();
-  }
-
-  // Logout
-  function logout() {
-    clearUser();
-    // optionally refresh UI
-  }
-
-  // Public API: onAuthChange(fn)
-  function onAuthChange(fn) {
-    if (typeof fn === 'function') listeners.push(fn);
-  }
-
-  // Boot: wire UI events
-  function init() {
-    // restore session and notify
-    const existing = getUser();
-    notify(existing);
-
-    // tab clicks
-    if (tabLogin) tabLogin.addEventListener('click', showLogin);
-    if (tabSignup) tabSignup.addEventListener('click', showSignup);
-
-    // form submits
-    if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
-    if (signupForm) signupForm.addEventListener('submit', handleSignupSubmit);
-
-    // close auth modal buttons
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.close-auth-modal')) closeAuthModal();
+  // Tab switching
+  if (tabLogin && tabSignup && loginFormEl && signupFormEl) {
+    tabLogin.addEventListener("click", () => {
+      tabLogin.classList.add("active");
+      tabSignup.classList.remove("active");
+      loginFormEl.classList.remove("hidden");
+      signupFormEl.classList.add("hidden");
     });
 
-    // click outside content closes
-    if (authModal) {
-      authModal.addEventListener('click', (e) => {
-        if (e.target === authModal) closeAuthModal();
-      });
-    }
+    tabSignup.addEventListener("click", () => {
+      tabSignup.classList.add("active");
+      tabLogin.classList.remove("active");
+      signupFormEl.classList.remove("hidden");
+      loginFormEl.classList.add("hidden");
+    });
   }
+});
 
-  // Expose API
-  window.auth = {
-    init,
-    openAuthModal,
-    closeAuthModal,
-    isLoggedIn,
-    getUser,
-    logout,
-    onAuthChange,
-  };
 
-  // Auto-init
-  document.addEventListener('DOMContentLoaded', init);
-})();
+
+// LOGOUT
+const logoutBtn = document.getElementById("logout-btn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    alert("Logged out!");
+  });
+}
+
+// TRACK STATE
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User logged in:", user.email);
+  } else {
+    console.log("No user logged in");
+  }
+});
+
+
 

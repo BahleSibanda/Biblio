@@ -120,10 +120,14 @@
         // check requires-login by class
         if (link.classList.contains('requires-login')) {
           // check auth
-          if (window.auth && !window.auth.isLoggedIn()) {
-            window.auth.openAuthModal();
-            return;
-          }
+           onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User is signed in:", user.email);
+  } else {
+    console.log("No user signed in.");
+  }
+});
+
         }
         if (page) loadPage(page);
       });
