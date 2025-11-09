@@ -7,9 +7,59 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-const auth = window.auth;  
+// Initialize Firebase Auth properly
+const firebaseAuth = getAuth();
 
-// SIGN UP
+// Create global auth object BEFORE anything else uses it
+window.auth = {
+  // Return true if logged in
+  isLoggedIn() {
+    return firebaseAuth.currentUser !== null;
+  },
+
+  // Expose real firebase current user
+  currentUser() {
+    return firebaseAuth.currentUser;
+  },
+
+  // Open auth modal (login/signup)
+  openAuthModal(mode = "login") {
+    const modal = document.getElementById("auth-modal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const tabLogin = document.getElementById("tab-login");
+    const tabSignup = document.getElementById("tab-signup");
+
+    if (mode === "login") {
+      tabLogin.classList.add("active");
+      tabSignup.classList.remove("active");
+      loginForm.classList.remove("hidden");
+      signupForm.classList.add("hidden");
+    } else {
+      tabSignup.classList.add("active");
+      tabLogin.classList.remove("active");
+      signupForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+    }
+  },
+
+  // Logout wrapper
+  logout() {
+    return signOut(firebaseAuth);
+  },
+
+  // Allow main.js to listen for auth changes
+  onAuthChange(callback) {
+    onAuthStateChanged(firebaseAuth, callback);
+  }
+};
+
+// SIGNUP
 const signupForm = document.getElementById("signup-form");
 if (signupForm) {
   signupForm.addEventListener("submit", async (e) => {
@@ -19,25 +69,20 @@ if (signupForm) {
     const email = document.getElementById("signup-email").value;
     const password = document.getElementById("signup-password").value;
 
-try {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+      alert(`Signup successful! Welcome, ${name}.`);
 
-  alert(`Signup successful! Welcome, ${name}.`);
-  signupForm.reset();
+      signupForm.reset();
+      const modal = document.getElementById("auth-modal");
+      modal.style.display = "none";
 
-  // ✅ Close the modal
-  const authModal = document.getElementById("auth-modal");
-  if (authModal) {
-    authModal.setAttribute("aria-hidden", "true");
-    authModal.style.display = "none";
-  }
-} catch (err) {
-  alert("Signup failed: " + err.message);
-  console.error(err);
+    } catch (err) {
+      alert("Signup failed: " + err.message);
+      console.error(err);
+    }
+  });
 }
-
-      
 
 // LOGIN
 const loginForm = document.getElementById("login-form");
@@ -49,9 +94,13 @@ if (loginForm) {
     const password = document.getElementById("login-password").value;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(firebaseAuth, email, password);
       alert("Login successful!");
       loginForm.reset();
+
+      const modal = document.getElementById("auth-modal");
+      modal.style.display = "none";
+
     } catch (err) {
       alert("Login failed: " + err.message);
       console.error(err);
@@ -59,49 +108,18 @@ if (loginForm) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginFormEl = document.getElementById("login-form");
-  const signupFormEl = document.getElementById("signup-form");
-  const tabLogin = document.getElementById("tab-login");
-  const tabSignup = document.getElementById("tab-signup");
-
-  // Tab switching
-  if (tabLogin && tabSignup && loginFormEl && signupFormEl) {
-    tabLogin.addEventListener("click", () => {
-      tabLogin.classList.add("active");
-      tabSignup.classList.remove("active");
-      loginFormEl.classList.remove("hidden");
-      signupFormEl.classList.add("hidden");
-    });
-
-    tabSignup.addEventListener("click", () => {
-      tabSignup.classList.add("active");
-      tabLogin.classList.remove("active");
-      signupFormEl.classList.remove("hidden");
-      loginFormEl.classList.add("hidden");
-    });
-  }
-});
-
-
-
-// LOGOUT
+// LOGOUT BUTTON (top navbar)
 const logoutBtn = document.getElementById("logout-btn");
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-    alert("Logged out!");
-  });
+  logoutBtn.addEventListener("click", () => window.auth.logout());
 }
 
-// TRACK STATE
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("User logged in:", user.email);
-  } else {
-    console.log("No user logged in");
-  }
+// Auth state logs
+onAuthStateChanged(firebaseAuth, (user) => {
+  if (user) console.log("User logged in:", user.email);
+  else console.log("No user logged in");
 });
+
 
 
 

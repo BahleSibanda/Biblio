@@ -20,7 +20,7 @@
 
 <body>
 
-    <!-- ✅ TOP NAVIGATION -->
+    <!-- TOP NAVIGATION -->
     <nav class="top-nav">
         <div class="logo">
             <i class="fas fa-book-open"></i>
@@ -40,7 +40,7 @@
     </nav>
 
 
-    <!-- ✅ SIDE ICON MENU -->
+    <!--SIDE ICON MENU -->
     <div class="side-menu">
         <a href="#" data-page="home" title="Home" class="side-item">
             <i class="fas fa-home icon"></i>
@@ -66,13 +66,13 @@
 
 
 
-    <!-- ✅ MAIN CONTENT -->
+    <!--MAIN CONTENT -->
     <div class="container">
 
-        <!-- ✅ HOME PAGE -->
+        <!-- HOME PAGE -->
         <div id="home-page" class="page active">
 
-            <!-- 🔥 Hottest Reads Section -->
+            <!--Hottest Reads Section -->
             <div class="content-box">
                 <div class="section-header">
                     <h2 class="section-title">Hottest Reads</h2>
@@ -91,7 +91,7 @@
             </div>
 
 
-            <!-- 📘 Currently Reading -->
+            <!-- Currently Reading -->
             <div class="content-box">
                 <div class="section-header">
                     <h2 class="section-title">Currently Reading</h2>
@@ -116,7 +116,7 @@
             </div>
 
 
-            <!-- 👥 Friends Activity -->
+            <!-- Friends Activity -->
             <div class="content-box">
                 <div class="section-header">
                     <h2 class="section-title">Latest from Friends</h2>
@@ -137,13 +137,13 @@
 
         </div>
 
-        <!-- ✅ Dynamic Pages will load here -->
+        <!-- Dynamic Pages will load here -->
         <div id="page-content"></div>
     </div>
 
 
 
-    <!-- ✅ SEARCH MODAL -->
+    <!--SEARCH MODAL -->
     <div class="modal" id="search-modal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -169,7 +169,7 @@
 
 
 
-    <!-- ✅ BOOK DETAILS MODAL -->
+    <!--BOOK DETAILS MODAL -->
     <div id="book-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -180,7 +180,7 @@
 
 
 
-    <!-- ✅ LOGIN + SIGNUP MODAL (combined) -->
+    <!-- LOGIN + SIGNUP MODAL (combined) -->
     <div class="auth-modal" id="auth-modal" aria-hidden="true">
         <div class="auth-modal-content">
             <button class="close-auth-modal">&times;</button>
@@ -211,13 +211,13 @@
 
 
 
-    <!-- ✅ LOGIN PROTECTION SELECTOR -->
+    <!-- LOGIN PROTECTION SELECTOR -->
     <script>
         window.REQUIRES_LOGIN_SELECTORS = ".requires-login";
     </script>
 
 
-    <!-- ✅ JS LIBRARIES -->
+    <!-- JS LIBRARIES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
@@ -233,7 +233,7 @@
     apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
     authDomain: "biblio-social-3399.firebaseapp.com",
     projectId: "biblio-social-3399",
-    storageBucket: "biblio-social-3399.appspot.com",  // ✅ fixed
+    storageBucket: "biblio-social-3399.appspot.com",  //
     messagingSenderId: "1086617986269",
     appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
     measurementId: "G-CWPPWJ212R"
@@ -244,7 +244,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ✅ Make Firebase objects available globally
+  // Make Firebase objects available globally
   window.auth = auth;
   window.db = db;
   window.firebaseApp = app;

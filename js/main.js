@@ -98,41 +98,40 @@
   }
 
   function bindNavLinks() {
-    // top nav links
-    document.querySelectorAll('.nav-links a').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = link.dataset.page;
-        loadPage(page);
-      });
+  // top nav links
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = link.dataset.page;
+      loadPage(page);
     });
+  });
 
-    // side menu links
-    document.querySelectorAll('.side-menu .side-item').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = link.dataset.page;
-        // special: search button has id
-        if (link.id === 'search-modal-btn') {
-          openModal('search-modal');
-          return;
-        }
-        // check requires-login by class
-        if (link.classList.contains('requires-login')) {
-          // check auth
-           onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("User is signed in:", user.email);
-  } else {
-    console.log("No user signed in.");
-  }
-});
+  // side menu links
+  document.querySelectorAll('.side-menu .side-item').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = link.dataset.page;
 
+      // search button
+      if (link.id === 'search-modal-btn') {
+        openModal('search-modal');
+        return;
+      }
+      if (link.classList.contains('requires-login')) {
+        if (!auth.currentUser) {
+          const authModal = document.getElementById("auth-modal");
+          authModal.style.display = "flex";
+          authModal.setAttribute("aria-hidden", "false");
+          return;  
         }
-        if (page) loadPage(page);
-      });
+      }
+
+      if (page) loadPage(page);
     });
-  }
+  });
+}
+
 
   // Wire modal close buttons (elements with .close-modal and .close-auth-modal)
   function wireModalControls() {

@@ -1,99 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../pages.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biblio — Profile</title>
+
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/page.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
 </head>
+
 <body>
-<div id="profile-page" class="page">
+
+  <!-- TOP NAVIGATION -->
+  <nav class="top-nav">
+    <div class="logo">
+      <i class="fas fa-book-open"></i>
+      <span>Biblio</span>
+    </div>
+
+    <div class="nav-links">
+      <a href="/" data-page="home">HOME</a>
+      <a href="/pages/bookclubs.html" data-page="bookclubs">BOOKCLUBS</a>
+      <a href="/pages/following.html" data-page="following">FOLLOWING</a>
+    </div>
+
+    <div class="user-actions">
+      <button id="logout-btn" class="cta">LOG OUT</button>
+    </div>
+  </nav>
+
+
+  <!-- SIDE MENU -->
+  <div class="side-menu">
+    <a href="/" class="side-item" title="Home"><i class="fas fa-home"></i></a>
+    <a href="#" id="search-modal-btn" class="side-item" title="Search"><i class="fas fa-search"></i></a>
+    <a href="#" data-page="notifications" class="side-item requires-login" title="Notifications"><i class="fas fa-bell"></i></a>
+    <a href="#" data-page="profile" class="side-item active" title="Profile"><i class="fas fa-user"></i></a>
+    <a href="#" data-page="settings" class="side-item requires-login" title="Settings"><i class="fas fa-cog"></i></a>
+  </div>
+
+
+  <!-- PROFILE PAGE -->
+  <div id="profile-page" class="page profile-page">
+
+    <!-- Header -->
     <div class="profile-header">
-        <img src="https://via.placeholder.com/1200x200/4C6145/FFFFFF?text=Header+Image" alt="Header" class="header-image">
-        <img src="https://via.placeholder.com/100/74925D/FFFFFF?text=User" alt="Profile" class="profile-picture">
-        <div class="profile-info">
-            <div class="username">Bookworm42</div>
-            <div class="name">Alex Johnson</div>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-value">127</span>
-                    <span class="stat-label">Followers</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value">89</span>
-                    <span class="stat-label">Following</span>
-                </div>
+      <div class="profile-banner" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); height: 180px; border-radius: 12px 12px 0 0;"></div>
+
+      <div class="profile-info-main">
+        <img
+          src="https://placehold.co/100x100?text=User"
+          alt="Profile Picture"
+          class="profile-avatar"
+          id="profile-avatar"
+        />
+
+        <div class="profile-details">
+          <h2 class="profile-name" id="profile-name">Loading...</h2>
+          <p class="profile-username" id="profile-username">@loading</p>
+          <p class="profile-bio" id="profile-bio">Fetching user data...</p>
+
+          <div class="profile-stats">
+            <div class="stat">
+              <span class="stat-number" id="stat-books">0</span>
+              <span class="stat-label">Books Read</span>
             </div>
+            <div class="stat">
+              <span class="stat-number" id="stat-followers">0</span>
+              <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number" id="stat-following">0</span>
+              <span class="stat-label">Following</span>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn-edit-profile" id="edit-profile-btn">
+          <i class="fas fa-pen"></i> Edit Profile
+        </button>
+      </div>
     </div>
+
+
+    <!-- Tabs -->
     <div class="profile-tabs">
-        <div class="profile-tab active" data-tab="profile">Profile</div>
-        <div class="profile-tab" data-tab="bookshelf">Bookshelf</div>
-        <div class="profile-tab" data-tab="lists">Lists</div>
-        <div class="profile-tab" data-tab="likes">Likes</div>
-        <div class="profile-tab" data-tab="reviews">Reviews</div>
+      <button class="profile-tab active" data-tab="bookshelf">Bookshelf</button>
+      <button class="profile-tab" data-tab="lists">Lists</button>
+      <button class="profile-tab" data-tab="likes">Likes</button>
+      <button class="profile-tab" data-tab="reviews">Reviews</button>
+      <button class="profile-tab" data-tab="activity">Activity</button>
     </div>
-    <div class="profile-content">
-        <div>
-            <div id="profile-tab-content">
-                <div class="content-box">
-                    <h3 class="section-title">Top 4 Reads</h3>
-                    <div class="top-reads" id="top-reads">
-                        <!-- Top reads will be populated by JavaScript -->
-                    </div>
-                </div>
-                <div class="content-box">
-                    <h3 class="section-title">Bookshelf</h3>
-                    <div class="bookshelf" id="bookshelf">
-                        <!-- Bookshelf will be populated by JavaScript -->
-                    </div>
-                    <button class="cta" style="margin-top: 1rem; width: 100%; background: var(--dark-azure);">View All Books</button>
-                </div>
-            </div>
-            <div id="bookshelf-tab-content" style="display: none;">
-                <div class="content-box">
-                    <h3 class="section-title">All Books</h3>
-                    <div class="book-grid" id="all-books">
-                        <!-- All books will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-            <div id="lists-tab-content" style="display: none;">
-                <div class="content-box">
-                    <h3 class="section-title">Your Lists</h3>
-                    <div id="user-lists">
-                        <!-- Lists will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-            <div id="likes-tab-content" style="display: none;">
-                <div class="content-box">
-                    <h3 class="section-title">Liked Books & Lists</h3>
-                    <div id="liked-content">
-                        <!-- Liked content will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-            <div id="reviews-tab-content" style="display: none;">
-                <div class="content-box">
-                    <h3 class="section-title">Your Reviews</h3>
-                    <div id="user-reviews">
-                        <!-- Reviews will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div>
-            <div class="content-box">
-                <h3 class="section-title">Recent Activity</h3>
-                <div id="profile-activity">
-                    <!-- Activity will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
+
+
+    <!-- Tab Content -->
+    <div class="tab-content active" id="bookshelf-tab-content">
+      <div class="content-box">
+        <h3 class="section-title">Your Bookshelf</h3>
+        <div class="bookshelf-grid" id="bookshelf"></div>
+      </div>
     </div>
-</div>
+
+    <div class="tab-content" id="lists-tab-content">
+      <div class="content-box">
+        <h3 class="section-title">Your Lists</h3>
+        <div id="user-lists"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="likes-tab-content">
+      <div class="content-box">
+        <h3 class="section-title">Liked Books & Lists</h3>
+        <div id="liked-content"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="reviews-tab-content">
+      <div class="content-box">
+        <h3 class="section-title">Your Reviews</h3>
+        <div id="user-reviews"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="activity-tab-content">
+      <div class="content-box">
+        <h3 class="section-title">Recent Activity</h3>
+        <div id="profile-activity"></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
+      authDomain: "biblio-social-3399.firebaseapp.com",
+      projectId: "biblio-social-3399",
+      storageBucket: "biblio-social-3399.appspot.com",
+      messagingSenderId: "1086617986269",
+      appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
+      measurementId: "G-CWPPWJ212R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.auth = auth;
+    window.db = db;
+  </script>
+
+
+  <!-- Scripts -->
+  <script src="../js/main.js"></script>
+  <script type="module" src="../js/profile.js"></script>
+
 </body>
 </html>
+
 
