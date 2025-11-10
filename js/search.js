@@ -21,13 +21,14 @@ function setupSearchModal() {
     searchTimeout = setTimeout(() => performSearch(query), 500);
   });
 
-  // ✅ Only clear results when the modal *actually closes*,
+  // Only clear results when the modal *actually closes*,
   // not when you click inside it or while results are visible.
-  modal.addEventListener("click", function (e) {
-    if (e.target.classList.contains("close-modal")) {
-      clearSearchResults();
-    }
-  });
+   modal.addEventListener("click", function (e) {
+  // Only clear when clicking the background (not book results or modal content)
+  if (e.target === modal && !e.target.closest(".modal-content")) {
+    clearSearchResults();
+  }
+});
 }
 
 // Actual Google Books API search

@@ -1,0 +1,59 @@
+/* css/animations.css */
+/* Lightweight helper styles for GSAP-driven transitions and focus management */
+
+/* reduce flash when animations start */
+.animated-hidden {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* smooth show/hide for modals (used by app.openModal/closeModal) */
+.modal {
+  transition: opacity 220ms ease, transform 220ms ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* auth modal */
+.auth-modal {
+  transition: opacity 200ms ease, transform 220ms ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.auth-modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* slight scaling for modal-content entrance */
+.modal-content {
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+/* focus outline for accessibility (visible but subtle) */
+:focus {
+  outline: 3px solid rgba(80, 90, 255, 0.12);
+  outline-offset: 3px;
+}
+
+/* small helper for small pulsing CTAs */
+.cta.pulse {
+  animation: cta-pulse 1.6s infinite ease-in-out;
+}
+@keyframes cta-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* make sure hidden elements don't retain focus when aria-hidden applied elsewhere
+   Note: we prefer to remove aria-hidden from an open modal; instead inert the rest of page if possible */
+[aria-hidden="true"] .focus-trap {
+  pointer-events: none;
+  user-select: none;
+}

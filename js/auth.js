@@ -1,5 +1,6 @@
 // js/auth.js
-// Handles login, signup, and auth state updates with Firebase
+// Unified, safe Firebase Authentication logic
+// Works with modular Firebase SDK and your main.js
 
 import {
   getAuth,
@@ -10,117 +11,149 @@ import {
   updateProfile
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-const auth = window.auth;
+// Ensure Firebase App is already initialized in index.html
+const auth = getAuth(window.firebaseApp);
 
-// ===== Modal Helpers =====
-function closeAuthModal() {
-  const modal = document.getElementById("auth-modal");
-  if (modal) {
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
-  }
-}
-
-function openAuthModal(tab = "login") {
-  const modal = document.getElementById("auth-modal");
-  if (!modal) return;
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden", "false");
-
-  const tabLogin = document.getElementById("tab-login");
-  const tabSignup = document.getElementById("tab-signup");
-  const loginForm = document.getElementById("login-form");
-  const signupForm = document.getElementById("signup-form");
-
-  if (tab === "signup") {
-    tabSignup?.classList.add("active");
-    tabLogin?.classList.remove("active");
-    signupForm?.classList.remove("hidden");
-    loginForm?.classList.add("hidden");
-  } else {
-    tabLogin?.classList.add("active");
-    tabSignup?.classList.remove("active");
-    loginForm?.classList.remove("hidden");
-    signupForm?.classList.add("hidden");
-  }
-}
-
-// ===== Navbar Updater =====
-function updateNavbarForUser(user) {
-  const ua = document.querySelector(".user-actions");
-  if (!ua) return;
-
-  if (user) {
-    ua.innerHTML = `
-      <span style="font-weight:700;color:var(--dark-azure);margin-right:.6rem;">
-        ${user.displayName || user.email}
-      </span>
-      <button id="logout-btn" class="cta">LOG OUT</button>
-    `;
-  } else {
-    ua.innerHTML = `
-      <button id="open-login-modal" class="cta">LOG IN</button>
-      <button id="open-signup-modal" class="cta">SIGN UP</button>
-    `;
-  }
-
-  // Notify other scripts that .user-actions changed
-  window.dispatchEvent(new CustomEvent("userActionsUpdated"));
-
-  // Bind logout button
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-    });
-  }
-}
-
-// ===== Signup =====
+// ---- DOM Elements ----
+const authModal = document.getElementById("auth-modal");
+const loginForm = document.getElementById("login-form");
 const signupForm = document.getElementById("signup-form");
+const tabLogin = document.getElementById("tab-login");
+const tabSignup = document.getElementById("tab-signup");
+const closeAuth = document.querySelector(".close-auth-modal");
+
+// ---- State ----
+let currentMode = "login"; // 'login' or 'signup'
+
+// ---- Modal Handling ----
+function openAuthModal(mode = "login") {
+  if (!authModal) return;
+  currentMode = mode;
+  authModal.classList.add("show");
+  authModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  // Toggle forms
+  if (mode === "login") {
+    loginForm.classList.remove("hidden");
+    signupForm.classList.add("hidden");
+    tabLogin.classList.add("active");
+    tabSignup.classList.remove("active");
+  } else {
+    signupForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+    tabSignup.classList.add("active");
+    tabLogin.classList.remove("active");
+  }
+}
+
+function closeAuthModal() {
+  if (!authModal) return;
+  authModal.classList.remove("show");
+  authModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+// Close modal events
+if (closeAuth) {
+  closeAuth.addEventListener("click", () => closeAuthModal());
+}
+
+authModal?.addEventListener("click", (e) => {
+  if (e.target === authModal) closeAuthModal();
+});
+
+// Switch tabs between login and signup
+tabLogin?.addEventListener("click", () => openAuthModal("login"));
+tabSignup?.addEventListener("click", () => openAuthModal("signup"));
+
+// ---- Form Submissions ----
+
+// LOGIN
+loginForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+
+  if (!email || !password) return alert("Please fill in all fields");
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    console.log("Logged in successfully");
+    closeAuthModal();
+  } catch (error) {
+    console.error("Login failed:", error.message);
+    alert(getFriendlyError(error.code));
+  }
+});
+
+// SIGNUP
 signupForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = document.getElementById("signup-name").value.trim();
   const email = document.getElementById("signup-email").value.trim();
   const password = document.getElementById("signup-password").value.trim();
 
+  if (!name || !email || !password) return alert("Please fill in all fields");
+
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: name });
-    alert(`Signup successful! Welcome, ${name || email}.`);
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCred.user, { displayName: name });
+    console.log("Account created successfully");
     closeAuthModal();
-    updateNavbarForUser(cred.user);
-    signupForm.reset();
-  } catch (err) {
-    alert("Signup failed: " + err.message);
+  } catch (error) {
+    console.error("Signup failed:", error.message);
+    alert(getFriendlyError(error.code));
   }
 });
 
-// ===== Login =====
-const loginForm = document.getElementById("login-form");
-loginForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value.trim();
+// LOGOUT
+async function logout() {
   try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    alert(`Welcome back, ${cred.user.displayName || cred.user.email}!`);
-    closeAuthModal();
-    updateNavbarForUser(cred.user);
-    loginForm.reset();
-  } catch (err) {
-    alert("Login failed: " + err.message);
+    await signOut(auth);
+    console.log(" Logged out successfully");
+  } catch (error) {
+    console.error("Logout failed:", error.message);
   }
-});
+}
 
-// ===== Track Auth Changes =====
-onAuthStateChanged(auth, (user) => {
-  console.log(user ? `User logged in: ${user.email}` : "No user logged in");
-  updateNavbarForUser(user);
-});
+// ---- Auth State Listener ----
+function onAuthChange(callback) {
+  if (typeof callback !== "function") return;
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log(" Auth state: logged in as", user.email);
+    } else {
+      console.log("Auth state: logged out");
+    }
+    callback(user);
+  });
+}
 
-// Expose helpers globally
-window.authHelpers = { closeAuthModal, openAuthModal, updateNavbarForUser };
+// ---- Helpers ----
+function getFriendlyError(code) {
+  switch (code) {
+    case "auth/invalid-email": return "Please enter a valid email address.";
+    case "auth/user-disabled": return "This account has been disabled.";
+    case "auth/user-not-found": return "No account found with this email.";
+    case "auth/wrong-password": return "Incorrect password.";
+    case "auth/email-already-in-use": return "That email is already registered.";
+    case "auth/weak-password": return "Password should be at least 6 characters.";
+    default: return "Something went wrong. Please try again.";
+  }
+}
+
+// ---- Expose Safe API ----
+window.auth = {
+  openAuthModal,
+  closeAuthModal,
+  logout,
+  onAuthChange,
+  isLoggedIn: () => !!auth.currentUser,
+  getCurrentUser: () => auth.currentUser,
+  authInstance: auth
+};
+
 
 
 

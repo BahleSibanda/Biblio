@@ -1,117 +1,412 @@
-/* page.css — Home / Bookclubs / Profile — themed version */
+/* page.css — thematic page-level styling for Biblio */
 
-/* Section titles */
-.section-title{
-  font-family:'Source Serif Pro',serif;
-  font-size:1.25rem;
-  color:var(--cream);
-  margin:0;
-}
+/* GENERAL LAYOUT ------------------------------------------------------- */
 
-/* Books grid */
-.books-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:1rem;
-  align-items:start;
-}
-.book-card{
-  background:var(--olive-panel);
-  border-radius:10px;
-  overflow:hidden;
-  transition:transform .18s ease, box-shadow .18s ease, opacity .12s ease;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  padding:.6rem;
-  min-height:220px;
-  color:var(--cream);
-}
-.book-card:hover{
-  transform:translateY(-6px);
-  box-shadow:0 10px 22px rgba(0,0,0,0.35);
-}
-.book-cover{
-  width:100%;
-  aspect-ratio:3/4;
-  border-radius:6px;
-  object-fit:cover;
-  display:block;
-  flex-shrink:0;
-  background:#ddd;
-  box-shadow:0 4px 12px rgba(0,0,0,0.4);
-}
-.book-info{padding:.5rem 0 0;display:flex;flex-direction:column;gap:.25rem}
-.book-title{font-weight:700;color:var(--cream);font-size:.95rem;line-height:1.15}
-.book-author{color:var(--light-grey);font-size:.85rem}
-.book-rating{color:var(--orange);font-size:.85rem;margin-top:auto}
-
-/* Currently reading */
-.horizontal-scroll{
-  display:flex;
-  gap:1rem;
-  overflow-x:auto;
-  padding:.25rem 0;
-  scrollbar-width:thin;
-}
-.currently-reading-card{
-  flex:0 0 auto;
-  width:240px;
-  background:var(--olive-panel);
-  border-radius:10px;
-  padding:.8rem;
-  display:flex;
-  gap:.6rem;
-  align-items:flex-start;
-  color:var(--cream);
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-}
-.currently-reading-cover{width:72px;height:104px;border-radius:6px;object-fit:cover}
-.reading-progress{background:var(--medium-grey);height:8px;border-radius:999px;overflow:hidden;margin-top:.6rem}
-.progress-bar{background:var(--orange);height:100%;width:40%;transition:width .25s}
-
-/* Friends activity */
-.friends-activity{display:flex;flex-direction:column;gap:.75rem}
-.activity-item{
-  display:flex;
-  gap:.6rem;
-  align-items:flex-start;
-  padding:.6rem;
-  border-radius:8px;
-  background:var(--olive-panel);
-  color:var(--cream);
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-}
-.activity-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover}
-
-/* Bookclubs & profile cards */
-.bookclubs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
-.bookclub-card{
-  background:var(--olive-panel);
-  padding:1rem;
-  border-radius:10px;
-  color:var(--cream);
-  box-shadow:0 10px 25px rgba(0,0,0,0.25);
-}
-.profile-header{
-  background:var(--olive-panel);
-  padding:1rem;
-  border-radius:10px;
-  color:var(--cream);
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #111;
+  font-family: 'Roboto', sans-serif;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity 0.2s ease-in-out;
 }
 
-/* Auth modal tweaks */
-.auth-modal .auth-modal-content{max-width:420px;padding:1rem}
-.auth-form h3{margin:0 0 .5rem}
-.auth-form input{margin-bottom:.6rem}
-.auth-form .auth-submit{width:100%}
-
-/* Responsive */
-@media(max-width:768px){
-  .container{padding-left:.75rem;padding-right:.75rem}
-  .books-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
-  .book-card{min-height:200px}
-  .horizontal-scroll{padding-bottom:.5rem}
+.page {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity 0.2s ease-in-out;
 }
+
+.page.active {
+  display: block;
+  opacity: 1;
+}
+
+/* CONTENT BOXES -------------------------------------------------------- */
+
+.content-box {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(20, 48, 53, 0.12);
+  padding: 1.6rem;
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.content-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(20, 48, 53, 0.15);
+}
+
+/* SECTION HEADERS ------------------------------------------------------ */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #74925D;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  color: #143035;
+  letter-spacing: 0.5px;
+}
+
+.see-all {
+  color: #F08E37;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.see-all:hover {
+  color: #312021;
+}
+
+/* BOOK CARDS ----------------------------------------------------------- */
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.book-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(116, 146, 93, 0.15);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(49, 32, 33, 0.25);
+}
+
+.book-cover {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.book-info {
+  padding: 0.6rem 0.8rem;
+}
+
+.book-title {
+  font-weight: 600;
+  color: #143035;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.book-author {
+  font-size: 0.85rem;
+  color: #4C6145;
+}
+
+/* CURRENTLY READING ---------------------------------------------------- */
+
+.currently-reading-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #afd9b6;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 3px 10px rgba(49, 32, 33, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  opacity: 1;
+  transform: none;
+}
+
+.currently-reading-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(49, 32, 33, 0.25);
+}
+
+.currently-reading-cover {
+  width: 80px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.reading-progress {
+  width: 100%;
+  height: 8px;
+  background: #FFE8C5;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #F08E37;
+  border-radius: 4px;
+}
+
+/* FRIENDS ACTIVITY ----------------------------------------------------- */
+
+.friends-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-radius: 10px;
+  background: #c0d3bb;
+  box-shadow: 0 3px 8px rgba(20, 48, 53, 0.1);
+  transition: background 0.3s ease;
+  opacity: 1;
+  transform: none;
+}
+
+.activity-item:hover {
+  background: #f9f9f9;
+}
+
+.activity-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-user {
+  font-weight: 600;
+  color: #143035;
+}
+
+.activity-text {
+  color: #4C6145;
+  font-size: 0.9rem;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: #74925D;
+}
+
+/* PROFILE PAGE --------------------------------------------------------- */
+
+.profile-header {
+  position: relative;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 16px rgba(20, 48, 53, 0.12);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #FFE8C5;
+  margin-top: -50px;
+  background: #fff;
+}
+
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #143035;
+}
+
+.profile-username {
+  color: #74925D;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.profile-bio {
+  color: #312021;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.profile-stats .stat-number {
+  font-weight: 700;
+  color: #F08E37;
+  font-size: 1.1rem;
+}
+
+.profile-stats .stat-label {
+  color: #4C6145;
+  font-size: 0.8rem;
+}
+
+/* PROFILE TABS --------------------------------------------------------- */
+
+.profile-tabs {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-tab {
+  border: 2px solid #74925D;
+  background: transparent;
+  color: #143035;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.profile-tab.active {
+  background: #74925D;
+  color: #fff;
+}
+
+.profile-tab:hover {
+  background: #F08E37;
+  color: #fff;
+  border-color: #F08E37;
+}
+
+/* BOOKCLUBS ------------------------------------------------------------ */
+
+.bookclubs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.5rem;
+}
+
+.bookclub-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(116, 146, 93, 0.2);
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.bookclub-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(20, 48, 53, 0.15);
+}
+
+.btn-join {
+  display: inline-block;
+  background: #F08E37;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.8rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-join:hover {
+  background: #143035;
+  color: #FFE8C5;
+}
+
+/* MODALS --------------------------------------------------------------- */
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 48, 53, 0.55);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(49, 32, 33, 0.25);
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.close-modal {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #143035;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.close-modal:hover {
+  transform: scale(1.1);
+}
+
+/* CTA BUTTONS ---------------------------------------------------------- */
+
+.cta {
+  background: #F08E37;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.cta:hover {
+  transform: scale(1.05);
+  background: #312021;
+  color: #FFE8C5;
+}
+
+/* ANIMATIONS ----------------------------------------------------------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 

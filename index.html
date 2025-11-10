@@ -8,14 +8,22 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Serif+Pro:wght@400;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Serif+Pro:wght@400;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet"
+  >
 
   <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  >
 
-  <!-- CSS Files -->
+  <!-- CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/page.css">
+  <link rel="stylesheet" href="css/animations.css">
+
 </head>
 
 <body>
@@ -105,12 +113,12 @@
       </div>
     </div>
 
-    <!-- Dynamic Pages load here -->
+    <!-- Dynamic Pages Load Here -->
     <div id="page-content"></div>
   </div>
 
   <!-- SEARCH MODAL -->
-  <div class="modal" id="search-modal">
+  <div class="modal" id="search-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-content" style="max-width:800px;">
       <div class="modal-header">
         <h3 class="modal-title">Search Books</h3>
@@ -132,7 +140,7 @@
   </div>
 
   <!-- BOOK MODAL -->
-  <div id="book-modal" class="modal">
+  <div id="book-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-content">
       <span class="close-modal">&times;</span>
       <h2 id="book-modal-title">Book Details</h2>
@@ -141,7 +149,7 @@
   </div>
 
   <!-- AUTH MODAL -->
-  <div class="auth-modal" id="auth-modal" aria-hidden="true">
+  <div class="auth-modal" id="auth-modal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="auth-modal-content">
       <button class="close-auth-modal">&times;</button>
       <div class="auth-tabs">
@@ -204,23 +212,27 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Global exposure
+    // Expose Firebase globally
     window.firebaseApp = app;
     window.auth = auth;
     window.db = db;
-    window._firebaseAuthInstance = auth; //  needed for safe-auth.js
+    window._firebaseAuthInstance = auth; // required for safe-auth.js
   </script>
 
-  <!-- Add safe-auth and ensure main.js loads AFTER it -->
-  <script src="js/safe-auth.js"></script>
-  <script src="js/main.js"></script>
+  <!-- Core Scripts -->
+ <script src="js/safe-auth.js"></script>
+<script src="js/main.js"></script>
 
-  <!-- Then load remaining scripts -->
-  <script type="module" src="js/auth.js"></script>
-  <script src="js/search.js"></script>
-  <script src="js/home.js"></script>
-</body>
-</html>
+<!-- Page Scripts -->
+<script src="js/home.js"></script>
+<script src="js/bookclubs.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/following.js"></script>
+<script src="js/settings.js" type="module"></script>
+<script src="js/search.js"></script>
+
+<!-- Animation Layer -->
+<script src="js/gsap-anim.js"></script>
 
 
 

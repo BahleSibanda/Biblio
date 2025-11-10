@@ -1,86 +1,142 @@
 // js/profile.js
-document.addEventListener("DOMContentLoaded", () => {
-  console.log(" profile.js loaded");
+// Safe Firebase Profile handling — non-module version
 
-  const auth = window.auth;
-  if (!auth) {
-    console.error(" Firebase Auth not found — make sure it's initialized before profile.js");
+(function () {
+  if (!window.auth || !window.db) {
+    console.error("Firebase not ready in profile.js");
     return;
   }
 
-  // Cache DOM elements
-  const profileName = document.getElementById("profile-name");
-  const profileUsername = document.getElementById("profile-username");
-  const profileBio = document.getElementById("profile-bio");
-  const profileAvatar = document.getElementById("profile-avatar");
-  const tabs = document.querySelectorAll(".profile-tab");
-  const tabContents = document.querySelectorAll(".tab-content");
+  const auth = window.auth;
+  const db = window.db;
 
-  //  Update Profile Info
-  import("https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js")
-    .then(({ onAuthStateChanged }) => {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          const displayName = user.displayName || user.email?.split("@")[0];
-          if (profileName) profileName.textContent = displayName;
-          if (profileUsername) profileUsername.textContent = `@${displayName}`;
-          if (profileAvatar)
-            profileAvatar.src = user.photoURL || "https://placehold.co/100x100?text=User";
-          if (profileBio)
-            profileBio.textContent = "Welcome back! This is your reading space.";
-        } else {
-          if (profileName) profileName.textContent = "Guest User";
-          if (profileUsername) profileUsername.textContent = "@guest";
-          if (profileAvatar)
-            profileAvatar.src = "https://placehold.co/100x100?text=Guest";
-          if (profileBio)
-            profileBio.textContent = "Please sign in to personalize your profile.";
-        }
-      });
-    })
-    .catch((err) => console.error("Error loading Firebase Auth:", err));
+  document.addEventListener("DOMContentLoaded", initProfilePage);
 
-  //  Tab switching functionality
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", (e) => {
-      e.preventDefault();
+  function initProfilePage() {
+    console.log("👤 Initializing profile page...");
+    const page = document.getElementById("profile-page");
+    if (!page) return;
 
-      // Remove active class from all tabs
-      tabs.forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) return renderLoggedOutState();
 
-      const targetTab = tab.dataset.tab;
+      try {
+        const ref = firebase.firestore().collection("users").doc(user.uid);
+        const snap = await ref.get();
+        const data = snap.exists ? snap.data() : {};
 
-      // Hide all tab contents
-      tabContents.forEach((section) => {
-        section.classList.remove("active");
-      });
-
-      // Show the matching one
-      const match = document.getElementById(`${targetTab}-tab-content`);
-      if (match) {
-        match.classList.add("active");
-
-        // Optional GSAP animation for smoothness
-        if (window.gsap) {
-          gsap.fromTo(
-            match,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
-          );
-        }
+        renderProfile(user, data);
+        setupProfileTabs();
+        setupProfileActions(user);
+        gsapProfileAnimations();
+      } catch (err) {
+        console.error("Error loading profile:", err);
       }
     });
-  });
+  }
 
-  //  Edit profile button (for later expansion)
-  const editBtn = document.getElementById("edit-profile-btn");
-  if (editBtn) {
-    editBtn.addEventListener("click", () => {
-      alert("Edit profile feature coming soon!");
+  function renderProfile(user, data) {
+    document.getElementById("profile-avatar").src =
+      user.photoURL || data.photoURL || "https://placehold.co/100x100?text=User";
+    document.getElementById("profile-name").textContent =
+      user.displayName || data.displayName || "Book Lover";
+    document.getElementById("profile-username").textContent =
+      "@" + (data.username || "new_user");
+    document.getElementById("profile-bio").textContent =
+      data.bio || "No bio yet. Share your favorite books!";
+
+    document.getElementById("stat-books").textContent = data.booksRead || 0;
+    document.getElementById("stat-followers").textContent = data.followers?.length || 0;
+    document.getElementById("stat-following").textContent = data.following?.length || 0;
+  }
+
+  function setupProfileActions(user) {
+    const editBtn = document.getElementById("edit-profile-btn");
+    if (!editBtn) return;
+    editBtn.addEventListener("click", () => openEditModal(user));
+  }
+
+  function openEditModal(user) {
+    const modal = document.createElement("div");
+    modal.className = "modal show";
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width:420px;">
+        <span class="close-modal">&times;</span>
+        <h3>Edit Profile</h3>
+        <form id="edit-profile-form">
+          <input type="text" id="edit-name" class="form-input" value="${user.displayName || ""}" placeholder="Display Name" required>
+          <input type="text" id="edit-username" class="form-input" placeholder="Username">
+          <input type="text" id="edit-photo" class="form-input" value="${user.photoURL || ""}" placeholder="Profile Picture URL">
+          <textarea id="edit-bio" class="form-input" placeholder="Bio..."></textarea>
+          <button type="submit" class="cta" style="margin-top:1rem;">Save Changes</button>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector(".close-modal").addEventListener("click", () => modal.remove());
+
+    modal.querySelector("#edit-profile-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("edit-name").value.trim();
+      const photoURL = document.getElementById("edit-photo").value.trim();
+      const bio = document.getElementById("edit-bio").value.trim();
+      const username = document.getElementById("edit-username").value.trim();
+
+      try {
+        await firebase.auth().currentUser.updateProfile({ displayName: name, photoURL });
+        await firebase.firestore().collection("users").doc(user.uid).set(
+          { displayName: name, photoURL, bio, username },
+          { merge: true }
+        );
+
+        alert("✅ Profile updated successfully!");
+        modal.remove();
+        location.reload();
+      } catch (err) {
+        alert("Error updating profile: " + err.message);
+      }
+    });
+
+    if (window.gsap) {
+      gsap.from(".modal-content", { duration: 0.4, scale: 0.9, opacity: 0, ease: "back.out(1.7)" });
+    }
+  }
+
+  function setupProfileTabs() {
+    const tabs = document.querySelectorAll(".profile-tab");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        contents.forEach((c) => c.classList.remove("active"));
+        tab.classList.add("active");
+        const target = document.getElementById(`${tab.dataset.tab}-tab-content`);
+        if (target) target.classList.add("active");
+      });
     });
   }
-});
+
+  function renderLoggedOutState() {
+    document.getElementById("profile-name").textContent = "Guest User";
+    document.getElementById("profile-username").textContent = "@guest";
+    document.getElementById("profile-bio").textContent = "Please log in to view your profile.";
+    document.getElementById("edit-profile-btn").textContent = "Log In";
+    document.getElementById("edit-profile-btn").addEventListener("click", () => {
+      document.getElementById("auth-modal").classList.add("show");
+    });
+  }
+
+  function gsapProfileAnimations() {
+    if (!window.gsap) return;
+    gsap.from(".profile-banner", { y: -40, opacity: 0, duration: 0.8, ease: "power2.out" });
+    gsap.from(".profile-avatar", { scale: 0, opacity: 0, delay: 0.4, duration: 0.5 });
+    gsap.from(".profile-details", { x: -20, opacity: 0, delay: 0.6, duration: 0.6 });
+    gsap.from(".profile-tabs", { y: 20, opacity: 0, delay: 0.8, duration: 0.5 });
+  }
+})();
+
 
 
 
