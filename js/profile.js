@@ -1,141 +1,87 @@
 // js/profile.js
-// Handles user profile rendering, bookshelf, and interactions
+document.addEventListener("DOMContentLoaded", () => {
+  console.log(" profile.js loaded");
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  const auth = window.auth;
+  if (!auth) {
+    console.error(" Firebase Auth not found — make sure it's initialized before profile.js");
+    return;
+  }
 
-const db = window.db || getFirestore();
-const auth = window.auth;
-
-// Initialize the profile page
-export function initProfilePage() {
-  console.log("Profile page initialized");
-
+  // Cache DOM elements
+  const profileName = document.getElementById("profile-name");
+  const profileUsername = document.getElementById("profile-username");
+  const profileBio = document.getElementById("profile-bio");
+  const profileAvatar = document.getElementById("profile-avatar");
   const tabs = document.querySelectorAll(".profile-tab");
-  const tabContents = {
-    profile: document.getElementById("profile-tab-content"),
-    bookshelf: document.getElementById("bookshelf-tab-content"),
-    lists: document.getElementById("lists-tab-content"),
-    likes: document.getElementById("likes-tab-content"),
-    reviews: document.getElementById("reviews-tab-content"),
-  };
+  const tabContents = document.querySelectorAll(".tab-content");
 
-  // Default user placeholders
-  const usernameEl = document.querySelector(".username");
-  const nameEl = document.querySelector(".name");
-  const profilePicEl = document.querySelector(".profile-picture");
+  //  Update Profile Info
+  import("https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js")
+    .then(({ onAuthStateChanged }) => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          const displayName = user.displayName || user.email?.split("@")[0];
+          if (profileName) profileName.textContent = displayName;
+          if (profileUsername) profileUsername.textContent = `@${displayName}`;
+          if (profileAvatar)
+            profileAvatar.src = user.photoURL || "https://placehold.co/100x100?text=User";
+          if (profileBio)
+            profileBio.textContent = "Welcome back! This is your reading space.";
+        } else {
+          if (profileName) profileName.textContent = "Guest User";
+          if (profileUsername) profileUsername.textContent = "@guest";
+          if (profileAvatar)
+            profileAvatar.src = "https://placehold.co/100x100?text=Guest";
+          if (profileBio)
+            profileBio.textContent = "Please sign in to personalize your profile.";
+        }
+      });
+    })
+    .catch((err) => console.error("Error loading Firebase Auth:", err));
 
-  // Show active tab
+  //  Tab switching functionality
   tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
+    tab.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // Remove active class from all tabs
       tabs.forEach((t) => t.classList.remove("active"));
       tab.classList.add("active");
 
-      Object.values(tabContents).forEach((el) => (el.style.display = "none"));
-      const target = tab.dataset.tab;
-      if (tabContents[target]) {
-        tabContents[target].style.display = "block";
+      const targetTab = tab.dataset.tab;
+
+      // Hide all tab contents
+      tabContents.forEach((section) => {
+        section.classList.remove("active");
+      });
+
+      // Show the matching one
+      const match = document.getElementById(`${targetTab}-tab-content`);
+      if (match) {
+        match.classList.add("active");
+
+        // Optional GSAP animation for smoothness
+        if (window.gsap) {
+          gsap.fromTo(
+            match,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+          );
+        }
       }
     });
   });
 
-  // Listen for auth state changes
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      console.log("Logged in as:", user.email);
-
-      // Populate profile details
-      nameEl.textContent = user.displayName || "Biblio Reader";
-      usernameEl.textContent = user.email.replace(/@.*/, "");
-      profilePicEl.src = user.photoURL || "https://placehold.co/100x100?text=User";
-
-      // Load bookshelf, lists, and reviews
-      await loadBookshelf();
-      await loadLists();
-      await loadReviews();
-      await loadActivity();
-    } else {
-      console.log("No user logged in — showing default profile");
-      nameEl.textContent = "Guest User";
-      usernameEl.textContent = "@guest";
-      profilePicEl.src = "https://placehold.co/100x100?text=Guest";
-    }
-  });
-}
-
-// --- DEMO CONTENT LOADERS ---
-
-async function loadBookshelf() {
-  const shelf = document.getElementById("bookshelf");
-  if (!shelf) return;
-
-  shelf.innerHTML = `
-    <div class="bookshelf-book">
-      <img src="https://placehold.co/100x140?text=Book" class="bookshelf-cover" alt="Book">
-      <p class="bookshelf-book-title">The Night Circus</p>
-    </div>
-    <div class="bookshelf-book">
-      <img src="https://placehold.co/100x140?text=Book" class="bookshelf-cover" alt="Book">
-      <p class="bookshelf-book-title">Circe</p>
-    </div>
-    <div class="bookshelf-book">
-      <img src="https://placehold.co/100x140?text=Book" class="bookshelf-cover" alt="Book">
-      <p class="bookshelf-book-title">Project Hail Mary</p>
-    </div>
-  `;
-}
-
-async function loadLists() {
-  const lists = document.getElementById("user-lists");
-  if (!lists) return;
-
-  lists.innerHTML = `
-    <div class="list-item">
-      <h4>Favorites of 2025</h4>
-      <p>My top-rated reads this year.</p>
-    </div>
-    <div class="list-item">
-      <h4>To Read Next</h4>
-      <p>Books waiting on my shelf.</p>
-    </div>
-  `;
-}
-
-async function loadReviews() {
-  const reviews = document.getElementById("user-reviews");
-  if (!reviews) return;
-
-  reviews.innerHTML = `
-    <div class="review-item">
-      <strong>The Song of Achilles</strong>
-      <p>"Heart-wrenching and beautifully written."</p>
-    </div>
-    <div class="review-item">
-      <strong>Fourth Wing</strong>
-      <p>"Fun fantasy read, though a bit overhyped."</p>
-    </div>
-  `;
-}
-
-async function loadActivity() {
-  const activity = document.getElementById("profile-activity");
-  if (!activity) return;
-
-  activity.innerHTML = `
-    <div class="activity-item">
-      <img src="https://placehold.co/40x40?text=U" class="activity-avatar" alt="User">
-      <div class="activity-content">
-        <div class="activity-user">You</div>
-        <div class="activity-text">added <strong>Tomorrow, and Tomorrow, and Tomorrow</strong> to your shelf</div>
-        <div class="activity-time">1 hour ago</div>
-      </div>
-    </div>
-  `;
-}
-
-// Initialize automatically if page loaded directly
-document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("profile-page")) {
-    initProfilePage();
+  //  Edit profile button (for later expansion)
+  const editBtn = document.getElementById("edit-profile-btn");
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      alert("Edit profile feature coming soon!");
+    });
   }
 });
+
+
+
+

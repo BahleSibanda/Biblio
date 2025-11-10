@@ -1,9 +1,80 @@
-<div id="settings-page" class="page">
-    <div class="content-box">
-        <h2 class="section-title">Account Settings</h2>
-        
-        <div id="settings-content">
-            <!-- Content will be populated based on auth status -->
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biblio — Settings</title>
+
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/page.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+</head>
+
+<body>
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <div class="logo">
+      <i class="fas fa-book-open"></i>
+      <span>Biblio</span>
     </div>
-</div>
+
+    <div class="nav-links">
+      <a href="/" data-page="home">HOME</a>
+      <a href="/pages/bookclubs.html" data-page="bookclubs">BOOKCLUBS</a>
+      <a href="/pages/following.html" data-page="following">FOLLOWING</a>
+    </div>
+
+    <div class="user-actions">
+      <button id="logout-btn" class="cta">LOG OUT</button>
+    </div>
+  </nav>
+
+  <!-- SIDE MENU -->
+  <div class="side-menu">
+    <a href="/" class="side-item"><i class="fas fa-home"></i></a>
+    <a href="#" id="search-modal-btn" class="side-item"><i class="fas fa-search"></i></a>
+    <a href="#" data-page="notifications" class="side-item requires-login"><i class="fas fa-bell"></i></a>
+    <a href="#" data-page="profile" class="side-item requires-login"><i class="fas fa-user"></i></a>
+    <a href="#" data-page="settings" class="side-item active"><i class="fas fa-cog"></i></a>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div id="settings-page" class="page">
+    <div class="content-box">
+      <h2 class="section-title">Account Settings</h2>
+      <div id="settings-content">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
+      authDomain: "biblio-social-3399.firebaseapp.com",
+      projectId: "biblio-social-3399",
+      storageBucket: "biblio-social-3399.appspot.com",
+      messagingSenderId: "1086617986269",
+      appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
+      measurementId: "G-CWPPWJ212R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    window.auth = auth;
+    window.db = db;
+  </script>
+
+  <script src="../js/main.js"></script>
+  <script type="module" src="../js/settings.js"></script>
+</body>
+</html>

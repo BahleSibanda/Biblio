@@ -1,226 +1,278 @@
 // js/main.js
 // Core app: modal helpers, routing, login-gate wiring, basic page loader
 
+// Inject shared top + side navigation if missing
+(function injectNav() {
+  const navHtml = `
+  <nav class="top-nav" role="navigation" aria-label="Main Navigation">
+    <div class="logo" id="site-logo">
+      <i class="fas fa-book-open" aria-hidden="true"></i>
+      <span>Biblio</span>
+    </div>
+    <div class="nav-links" role="menubar">
+      <a href="#" role="menuitem" data-page="home">HOME</a>
+      <a href="#" role="menuitem" class="requires-login" data-page="bookclubs">BOOKCLUBS</a>
+      <a href="#" role="menuitem" class="requires-login" data-page="following">FOLLOWING</a>
+    </div>
+    <div class="user-actions" id="global-user-actions">
+      <button id="open-login-modal" class="cta">LOG IN</button>
+      <button id="open-signup-modal" class="cta">SIGN UP</button>
+    </div>
+  </nav>
+
+  <div class="side-menu" role="navigation" aria-label="Side">
+    <a href="#" class="side-item" data-page="home" title="Home"><i class="fas fa-home icon"></i></a>
+    <a href="#" id="search-modal-btn" class="side-item" title="Search"><i class="fas fa-search icon"></i></a>
+    <a href="#" class="side-item requires-login" data-page="notifications" title="Notifications"><i class="fas fa-bell icon"></i><span class="notification-badge">3</span></a>
+    <a href="#" class="side-item requires-login" data-page="profile" title="Profile"><i class="fas fa-user icon"></i></a>
+    <a href="#" class="side-item requires-login" data-page="settings" title="Settings"><i class="fas fa-cog icon"></i></a>
+  </div>
+  `;
+
+  if (!document.querySelector(".top-nav")) {
+    document.body.insertAdjacentHTML("afterbegin", navHtml);
+  }
+})();
+
 (function () {
   // Cached DOM
-  const pageContent = document.getElementById('page-content');
-  const homePage = document.getElementById('home-page');
-  const authSelector = window.REQUIRES_LOGIN_SELECTORS || '.requires-login';
+  const pageContent = document.getElementById("page-content");
+  const homePage = document.getElementById("home-page");
 
-  // Utility: open a modal by id (adds .show and aria)
+  // ===== MODAL HELPERS =====
   function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
-    // trap focus lightly (simple)
-    const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+    const focusable = modal.querySelector(
+      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
+    );
     if (focusable) focusable.focus();
   }
 
-  // Utility: close modal element (by element or id)
   function closeModal(modalOrId) {
-    const modal = typeof modalOrId === 'string' ? document.getElementById(modalOrId) : modalOrId;
+    const modal =
+      typeof modalOrId === "string"
+        ? document.getElementById(modalOrId)
+        : modalOrId;
     if (!modal) return;
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
   }
 
-  // Close all modals (generic)
   function closeAllModals() {
-    document.querySelectorAll('.modal.show, .auth-modal.show').forEach(m => {
-      closeModal(m);
-    });
+    document
+      .querySelectorAll(".modal.show, .auth-modal.show")
+      .forEach((m) => closeModal(m));
   }
 
-  // Simple page loader: if pageName === 'home' show home, else try to fetch pages/<page>.html
+  // ===== PAGE LOADER =====
   async function loadPage(pageName) {
-    if (!pageName || pageName === 'home') {
-      // show home
-      if (homePage) homePage.style.display = '';
-      if (pageContent) pageContent.innerHTML = '';
-      // update nav active classes
-      updateActiveNav(pageName || 'home');
+    if (!pageName || pageName === "home") {
+      if (homePage) homePage.style.display = "";
+      if (pageContent) pageContent.innerHTML = "";
+      updateActiveNav(pageName || "home");
       return;
     }
 
-    // For protected pages, check auth (auth.js exports isLoggedIn)
-    if (['profile','settings','following','notifications'].includes(pageName) && window.auth && !window.auth.isLoggedIn()) {
-      // open login modal instead
-      if (window.auth && typeof window.auth.openAuthModal === 'function') {
-        window.auth.openAuthModal();
-      } else {
-        openModal('auth-modal');
-      }
+    // Protected pages
+    if (
+      ["profile", "settings", "following", "notifications"].includes(pageName) &&
+      window.auth &&
+      !window.auth.currentUser
+    ) {
+      openModal("auth-modal");
       return;
     }
 
-    // hide home
-    if (homePage) homePage.style.display = 'none';
+    if (homePage) homePage.style.display = "none";
 
-    // try to load page fragment
     try {
       const resp = await fetch(`pages/${pageName}.html`);
-      if (!resp.ok) throw new Error('Page not found');
+      if (!resp.ok) throw new Error("Page not found");
       const text = await resp.text();
-      // parse and extract meaningful fragment
-      const tmp = document.createElement('div');
+      const tmp = document.createElement("div");
       tmp.innerHTML = text;
-      const fragment = tmp.querySelector(`.${pageName}-page`) || tmp.querySelector(`#${pageName}-page`) || tmp;
+      const fragment =
+        tmp.querySelector(`.${pageName}-page`) ||
+        tmp.querySelector(`#${pageName}-page`) ||
+        tmp;
       pageContent.innerHTML = fragment ? fragment.innerHTML : text;
       updateActiveNav(pageName);
-      // attempt to load page-specific script
+
       const scriptSrc = `js/${pageName}.js`;
-      // avoid duplicate insertion
       if (!document.querySelector(`script[src="${scriptSrc}"]`)) {
-        const s = document.createElement('script');
+        const s = document.createElement("script");
         s.src = scriptSrc;
         s.defer = true;
-        s.onload = () => { console.log(`${pageName} script loaded`); };
+        s.onload = () => console.log(`${pageName} script loaded`);
         document.body.appendChild(s);
       }
     } catch (err) {
-      console.warn('Load page error', err);
+      console.warn("Load page error", err);
       pageContent.innerHTML = `<div class="content-box"><h2>Page Not Found</h2><p>We couldn't load that page.</p></div>`;
     }
   }
 
-  // Update nav active states - both top nav and side menu
+  // ===== NAV STATE =====
   function updateActiveNav(page) {
-    document.querySelectorAll('.nav-links a').forEach(a => {
-      if (a.dataset.page === page) a.classList.add('active');
-      else a.classList.remove('active');
+    document.querySelectorAll(".nav-links a").forEach((a) => {
+      if (a.dataset.page === page) a.classList.add("active");
+      else a.classList.remove("active");
     });
-    document.querySelectorAll('.side-menu .side-item').forEach(a => {
-      if (a.dataset.page === page) a.classList.add('active');
-      else a.classList.remove('active');
+    document.querySelectorAll(".side-menu .side-item").forEach((a) => {
+      if (a.dataset.page === page) a.classList.add("active");
+      else a.classList.remove("active");
     });
   }
 
+  // ===== NAVIGATION BINDINGS =====
   function bindNavLinks() {
-  // top nav links
-  document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const page = link.dataset.page;
-      loadPage(page);
+    document.querySelectorAll(".nav-links a").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
+        loadPage(page);
+      });
     });
-  });
 
-  // side menu links
-  document.querySelectorAll('.side-menu .side-item').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const page = link.dataset.page;
+    document.querySelectorAll(".side-menu .side-item").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
 
-      // search button
-      if (link.id === 'search-modal-btn') {
-        openModal('search-modal');
-        return;
-      }
-      if (link.classList.contains('requires-login')) {
-        if (!auth.currentUser) {
-          const authModal = document.getElementById("auth-modal");
-          authModal.style.display = "flex";
-          authModal.setAttribute("aria-hidden", "false");
-          return;  
+        if (link.id === "search-modal-btn") {
+          openModal("search-modal");
+          return;
         }
-      }
 
-      if (page) loadPage(page);
+        if (link.classList.contains("requires-login") && !auth.currentUser) {
+          openModal("auth-modal");
+          return;
+        }
+
+        if (page) loadPage(page);
+      });
     });
-  });
-}
+  }
 
-
-  // Wire modal close buttons (elements with .close-modal and .close-auth-modal)
+  // ===== MODAL EVENT WIRING =====
   function wireModalControls() {
-    document.addEventListener('click', (e) => {
-      // close-modal buttons
-      if (e.target.matches('.close-modal') || e.target.closest('.close-modal')) {
-        const modal = e.target.closest('.modal');
+    document.addEventListener("click", (e) => {
+      if (e.target.matches(".close-modal") || e.target.closest(".close-modal")) {
+        const modal = e.target.closest(".modal");
         if (modal) closeModal(modal);
       }
-      // close auth modal
-      if (e.target.matches('.close-auth-modal') || e.target.closest('.close-auth-modal')) {
-        const auth = document.querySelector('.auth-modal');
+      if (
+        e.target.matches(".close-auth-modal") ||
+        e.target.closest(".close-auth-modal")
+      ) {
+        const auth = document.querySelector(".auth-modal");
         if (auth) closeModal(auth);
       }
     });
 
-    // click outside modal content closes it
-    document.querySelectorAll('.modal, .auth-modal').forEach(modal => {
-      modal.addEventListener('click', (e) => {
+    document.querySelectorAll(".modal, .auth-modal").forEach((modal) => {
+      modal.addEventListener("click", (e) => {
         if (e.target === modal) closeModal(modal);
       });
     });
 
-    // Escape closes modals
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeAllModals();
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAllModals();
     });
   }
 
+  // ===== AUTH MODAL BUTTONS =====
+  function bindAuthOpeners() {
+    const openLogin = document.getElementById("open-login-modal");
+    const openSignup = document.getElementById("open-signup-modal");
+    if (openLogin)
+      openLogin.addEventListener("click", (e) => {
+        e.preventDefault();
+        openModal("auth-modal");
+        const tabLogin = document.getElementById("tab-login");
+        const tabSignup = document.getElementById("tab-signup");
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
+        if (tabLogin && tabSignup && loginForm && signupForm) {
+          tabLogin.classList.add("active");
+          tabSignup.classList.remove("active");
+          loginForm.classList.remove("hidden");
+          signupForm.classList.add("hidden");
+        }
+      });
+
+    if (openSignup)
+      openSignup.addEventListener("click", (e) => {
+        e.preventDefault();
+        openModal("auth-modal");
+        const tabLogin = document.getElementById("tab-login");
+        const tabSignup = document.getElementById("tab-signup");
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
+        if (tabLogin && tabSignup && loginForm && signupForm) {
+          tabSignup.classList.add("active");
+          tabLogin.classList.remove("active");
+          signupForm.classList.remove("hidden");
+          loginForm.classList.add("hidden");
+        }
+      });
+  }
+
+  // ===== INIT =====
   // Init app on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     bindNavLinks();
     wireModalControls();
+    bindAuthOpeners();
 
-    // If auth module exists, set a simple listener to update nav when login state changes
-    if (window.auth && typeof window.auth.onAuthChange === 'function') {
+    // Rebind auth openers when .user-actions changes
+    window.addEventListener("userActionsUpdated", () => {
+      bindAuthOpeners();
+    });
+
+    // If auth module exposes onAuthChange (e.g., from Firebase wrapper)
+    if (window.auth && typeof window.auth.onAuthChange === "function") {
       window.auth.onAuthChange((user) => {
+        const ua = document.querySelector(".user-actions");
+        if (!ua) return;
+
         if (user) {
-          // show quick UI change: replace login buttons with user name + logout (if you want)
-          const ua = document.querySelector('.user-actions');
-          if (ua) {
-            ua.innerHTML = `<span style="font-weight:700;color:var(--dark-azure);margin-right:.6rem;">${user.name || user.email}</span>
-                            <button id="logout-btn" class="cta">LOG OUT</button>`;
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) logoutBtn.addEventListener('click', () => {
-              window.auth.logout();
-              // refresh UI back to login/signup
-              const ua2 = document.querySelector('.user-actions');
-              if (ua2) ua2.innerHTML = `<button id="open-login-modal" class="cta">LOG IN</button><button id="open-signup-modal" class="cta">SIGN UP</button>`;
-              // re-bind auth buttons
-              bindAuthOpeners();
-            });
-          }
+          ua.innerHTML = `
+            <span style="font-weight:700;color:var(--dark-azure);margin-right:.6rem;">
+              ${user.displayName || user.email}
+            </span>
+            <button id="logout-btn" class="cta">LOG OUT</button>
+          `;
+          const logoutBtn = document.getElementById("logout-btn");
+          logoutBtn?.addEventListener("click", () => {
+            if (window.auth.logout) window.auth.logout();
+            ua.innerHTML = `
+              <button id="open-login-modal" class="cta">LOG IN</button>
+              <button id="open-signup-modal" class="cta">SIGN UP</button>
+            `;
+            bindAuthOpeners();
+          });
         } else {
-          // clear to default
-          const ua = document.querySelector('.user-actions');
-          if (ua) ua.innerHTML = `<button id="open-login-modal" class="cta">LOG IN</button><button id="open-signup-modal" class="cta">SIGN UP</button>`;
+          ua.innerHTML = `
+            <button id="open-login-modal" class="cta">LOG IN</button>
+            <button id="open-signup-modal" class="cta">SIGN UP</button>
+          `;
           bindAuthOpeners();
         }
       });
     }
 
-    bindAuthOpeners();
-
     // If a global home initializer exists, call it
-    if (window.home && typeof window.home.initHome === 'function') {
+    if (window.home && typeof window.home.initHome === "function") {
       window.home.initHome();
     }
   });
 
-  // Bind openers for the auth modal (buttons in top nav)
-  function bindAuthOpeners() {
-    const openLogin = document.getElementById('open-login-modal');
-    const openSignup = document.getElementById('open-signup-modal');
-    if (openLogin) openLogin.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (window.auth && typeof window.auth.openAuthModal === 'function') {
-        window.auth.openAuthModal('login');
-      } else openModal('auth-modal');
-    });
-    if (openSignup) openSignup.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (window.auth && typeof window.auth.openAuthModal === 'function') {
-        window.auth.openAuthModal('signup');
-      } else openModal('auth-modal');
-    });
-  }
 
-  // Expose certain functions globally for other modules
+  // Expose functions globally
   window.app = {
     openModal,
     closeModal,
@@ -229,4 +281,5 @@
     updateActiveNav,
   };
 })();
+
 

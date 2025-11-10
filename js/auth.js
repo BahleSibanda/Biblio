@@ -1,124 +1,127 @@
 // js/auth.js
+// Handles login, signup, and auth state updates with Firebase
+
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-// Initialize Firebase Auth properly
-const firebaseAuth = getAuth();
+const auth = window.auth;
 
-// Create global auth object BEFORE anything else uses it
-window.auth = {
-  // Return true if logged in
-  isLoggedIn() {
-    return firebaseAuth.currentUser !== null;
-  },
-
-  // Expose real firebase current user
-  currentUser() {
-    return firebaseAuth.currentUser;
-  },
-
-  // Open auth modal (login/signup)
-  openAuthModal(mode = "login") {
-    const modal = document.getElementById("auth-modal");
-    if (!modal) return;
-
-    modal.style.display = "flex";
-    modal.setAttribute("aria-hidden", "false");
-
-    const loginForm = document.getElementById("login-form");
-    const signupForm = document.getElementById("signup-form");
-    const tabLogin = document.getElementById("tab-login");
-    const tabSignup = document.getElementById("tab-signup");
-
-    if (mode === "login") {
-      tabLogin.classList.add("active");
-      tabSignup.classList.remove("active");
-      loginForm.classList.remove("hidden");
-      signupForm.classList.add("hidden");
-    } else {
-      tabSignup.classList.add("active");
-      tabLogin.classList.remove("active");
-      signupForm.classList.remove("hidden");
-      loginForm.classList.add("hidden");
-    }
-  },
-
-  // Logout wrapper
-  logout() {
-    return signOut(firebaseAuth);
-  },
-
-  // Allow main.js to listen for auth changes
-  onAuthChange(callback) {
-    onAuthStateChanged(firebaseAuth, callback);
+// ===== Modal Helpers =====
+function closeAuthModal() {
+  const modal = document.getElementById("auth-modal");
+  if (modal) {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
   }
-};
+}
 
-// SIGNUP
+function openAuthModal(tab = "login") {
+  const modal = document.getElementById("auth-modal");
+  if (!modal) return;
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+
+  const tabLogin = document.getElementById("tab-login");
+  const tabSignup = document.getElementById("tab-signup");
+  const loginForm = document.getElementById("login-form");
+  const signupForm = document.getElementById("signup-form");
+
+  if (tab === "signup") {
+    tabSignup?.classList.add("active");
+    tabLogin?.classList.remove("active");
+    signupForm?.classList.remove("hidden");
+    loginForm?.classList.add("hidden");
+  } else {
+    tabLogin?.classList.add("active");
+    tabSignup?.classList.remove("active");
+    loginForm?.classList.remove("hidden");
+    signupForm?.classList.add("hidden");
+  }
+}
+
+// ===== Navbar Updater =====
+function updateNavbarForUser(user) {
+  const ua = document.querySelector(".user-actions");
+  if (!ua) return;
+
+  if (user) {
+    ua.innerHTML = `
+      <span style="font-weight:700;color:var(--dark-azure);margin-right:.6rem;">
+        ${user.displayName || user.email}
+      </span>
+      <button id="logout-btn" class="cta">LOG OUT</button>
+    `;
+  } else {
+    ua.innerHTML = `
+      <button id="open-login-modal" class="cta">LOG IN</button>
+      <button id="open-signup-modal" class="cta">SIGN UP</button>
+    `;
+  }
+
+  // Notify other scripts that .user-actions changed
+  window.dispatchEvent(new CustomEvent("userActionsUpdated"));
+
+  // Bind logout button
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+  }
+}
+
+// ===== Signup =====
 const signupForm = document.getElementById("signup-form");
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+signupForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("signup-name").value.trim();
+  const email = document.getElementById("signup-email").value.trim();
+  const password = document.getElementById("signup-password").value.trim();
 
-    const name = document.getElementById("signup-name").value;
-    const email = document.getElementById("signup-email").value;
-    const password = document.getElementById("signup-password").value;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      alert(`Signup successful! Welcome, ${name}.`);
-
-      signupForm.reset();
-      const modal = document.getElementById("auth-modal");
-      modal.style.display = "none";
-
-    } catch (err) {
-      alert("Signup failed: " + err.message);
-      console.error(err);
-    }
-  });
-}
-
-// LOGIN
-const loginForm = document.getElementById("login-form");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-
-    try {
-      await signInWithEmailAndPassword(firebaseAuth, email, password);
-      alert("Login successful!");
-      loginForm.reset();
-
-      const modal = document.getElementById("auth-modal");
-      modal.style.display = "none";
-
-    } catch (err) {
-      alert("Login failed: " + err.message);
-      console.error(err);
-    }
-  });
-}
-
-// LOGOUT BUTTON (top navbar)
-const logoutBtn = document.getElementById("logout-btn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => window.auth.logout());
-}
-
-// Auth state logs
-onAuthStateChanged(firebaseAuth, (user) => {
-  if (user) console.log("User logged in:", user.email);
-  else console.log("No user logged in");
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: name });
+    alert(`Signup successful! Welcome, ${name || email}.`);
+    closeAuthModal();
+    updateNavbarForUser(cred.user);
+    signupForm.reset();
+  } catch (err) {
+    alert("Signup failed: " + err.message);
+  }
 });
+
+// ===== Login =====
+const loginForm = document.getElementById("login-form");
+loginForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    alert(`Welcome back, ${cred.user.displayName || cred.user.email}!`);
+    closeAuthModal();
+    updateNavbarForUser(cred.user);
+    loginForm.reset();
+  } catch (err) {
+    alert("Login failed: " + err.message);
+  }
+});
+
+// ===== Track Auth Changes =====
+onAuthStateChanged(auth, (user) => {
+  console.log(user ? `User logged in: ${user.email}` : "No user logged in");
+  updateNavbarForUser(user);
+});
+
+// Expose helpers globally
+window.authHelpers = { closeAuthModal, openAuthModal, updateNavbarForUser };
+
 
 
 

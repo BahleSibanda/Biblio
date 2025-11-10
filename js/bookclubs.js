@@ -1,199 +1,145 @@
 // js/bookclubs.js
-// Handles dynamic rendering, joining/leaving clubs, and club discussion modal
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Bookclubs page loaded ");
 
-window.bookclubs = {
-  initBookclubs() {
-    console.log("📚 Bookclubs page initialized");
+  // === DOM REFS ===
+  const yourClubsGrid = document.getElementById("your-bookclubs");
+  const popularGrid = document.getElementById("popular-bookclubs");
+  const suggestedGrid = document.getElementById("suggested-bookclubs");
 
-    const yourClubsGrid = document.getElementById("your-bookclubs");
-    const popularClubsGrid = document.getElementById("popular-bookclubs");
-    const dynamicClubsGrid = document.getElementById("dynamic-bookclubs");
-    const clubModal = document.getElementById("club-modal");
-    const clubModalTitle = document.getElementById("club-modal-title");
-    const clubPostsContainer = document.getElementById("club-posts");
-    const clubPostForm = document.getElementById("club-post-form");
-    const clubPostInput = document.getElementById("club-post-input");
-
-    if (!yourClubsGrid) {
-      console.warn("Bookclubs page not ready yet.");
-      return;
-    }
-
-    // Mock sample data for dynamic rendering
-    const sampleClubs = [
-      {
-        id: 4,
-        name: "Historical Fiction Society",
-        members: 29,
-        description: "Exploring the past through gripping historical novels and biographies.",
-      },
-      {
-        id: 5,
-        name: "Fantasy Fellowship",
-        members: 67,
-        description: "Discussing magical worlds, quests, and legendary heroes from epic fantasies.",
-      },
-      {
-        id: 6,
-        name: "Non-Fiction Thinkers",
-        members: 52,
-        description: "For curious minds who love to read and discuss real-world stories and ideas.",
-      },
-    ];
-
-    // Local state (temporary)
-    let joinedClubs = JSON.parse(localStorage.getItem("joinedClubs") || "[]");
-    let clubPosts = JSON.parse(localStorage.getItem("clubPosts") || "{}");
-
-    function renderYourClubs() {
-      yourClubsGrid.innerHTML = "";
-
-      if (joinedClubs.length === 0) {
-        yourClubsGrid.innerHTML = `<p style="color: var(--dark-grey); font-size: 0.95rem;">You haven’t joined any clubs yet. Join one below!</p>`;
-        return;
-      }
-
-      joinedClubs.forEach((club) => {
-        const card = document.createElement("div");
-        card.className = "bookclub-card";
-        card.innerHTML = `
-          <div class="bookclub-header">
-            <div class="bookclub-avatar" style="background: var(--light-grey); display:flex; align-items:center; justify-content:center;">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="bookclub-info">
-              <div class="bookclub-name">${club.name}</div>
-              <div class="bookclub-members">${club.members} members</div>
-            </div>
-          </div>
-          <p class="bookclub-description">${club.description}</p>
-          <div class="bookclub-actions">
-            <button class="btn-view" data-club-id="${club.id}">Open Club</button>
-            <button class="btn-leave" data-club-id="${club.id}">Leave Club</button>
-          </div>
-        `;
-        yourClubsGrid.appendChild(card);
-      });
-    }
-
-    function renderDynamicClubs() {
-      sampleClubs.forEach((club) => {
-        const card = document.createElement("div");
-        card.className = "bookclub-card";
-        card.setAttribute("data-club-id", club.id);
-        card.innerHTML = `
-          <div class="bookclub-header">
-            <div class="bookclub-avatar" style="background: var(--light-grey); display:flex; align-items:center; justify-content:center;">
-              <i class="fas fa-book"></i>
-            </div>
-            <div class="bookclub-info">
-              <div class="bookclub-name">${club.name}</div>
-              <div class="bookclub-members">${club.members} members</div>
-            </div>
-          </div>
-          <p class="bookclub-description">${club.description}</p>
-          <div class="bookclub-actions">
-            <button class="btn-view" data-club-id="${club.id}">Open Club</button>
-            <button class="btn-join" data-club-id="${club.id}">Join Club</button>
-          </div>
-        `;
-        dynamicClubsGrid.appendChild(card);
-      });
-    }
-
-    function requireLogin(callback) {
-      if (window.auth && auth.currentUser) {
-        callback();
-      } else {
-        const authModal = document.getElementById("auth-modal");
-        if (authModal) {
-          authModal.style.display = "flex";
-          authModal.setAttribute("aria-hidden", "false");
-        }
-      }
-    }
-
-    function handleJoinClub(club) {
-      if (joinedClubs.find((c) => c.id === club.id)) return;
-      joinedClubs.push(club);
-      localStorage.setItem("joinedClubs", JSON.stringify(joinedClubs));
-      renderYourClubs();
-    }
-
-    function handleLeaveClub(id) {
-      joinedClubs = joinedClubs.filter((c) => c.id !== id);
-      localStorage.setItem("joinedClubs", JSON.stringify(joinedClubs));
-      renderYourClubs();
-    }
-
-    function openClubModal(clubId, clubName) {
-      clubModalTitle.textContent = clubName;
-      clubModal.classList.add("show");
-      clubModal.setAttribute("aria-hidden", "false");
-
-      const posts = clubPosts[clubId] || [];
-      clubPostsContainer.innerHTML = posts.length
-        ? posts.map((p) => `<div class="post-item"><strong>${p.user}:</strong> ${p.text}</div>`).join("")
-        : `<p style="color: var(--dark-grey); font-size:0.9rem;">No posts yet. Start the conversation!</p>`;
-
-      clubPostForm.onsubmit = (e) => {
-        e.preventDefault();
-        requireLogin(() => {
-          const text = clubPostInput.value.trim();
-          if (!text) return;
-          const user = auth.currentUser ? auth.currentUser.email.split("@")[0] : "Anonymous";
-          const post = { user, text };
-          clubPosts[clubId] = [...(clubPosts[clubId] || []), post];
-          localStorage.setItem("clubPosts", JSON.stringify(clubPosts));
-          clubPostInput.value = "";
-          openClubModal(clubId, clubName);
-        });
-      };
-    }
-
-    clubModal.addEventListener("click", (e) => {
-      if (e.target.classList.contains("close-modal") || e.target === clubModal) {
-        clubModal.classList.remove("show");
-        clubModal.setAttribute("aria-hidden", "true");
-      }
-    });
-
-    document.body.addEventListener("click", (e) => {
-      const joinBtn = e.target.closest(".btn-join");
-      const viewBtn = e.target.closest(".btn-view");
-      const leaveBtn = e.target.closest(".btn-leave");
-
-      if (joinBtn) {
-        const card = joinBtn.closest(".bookclub-card");
-        const club = {
-          id: parseInt(card.dataset.clubId),
-          name: card.querySelector(".bookclub-name").textContent,
-          members: parseInt(card.querySelector(".bookclub-members").textContent),
-          description: card.querySelector(".bookclub-description").textContent,
-        };
-        requireLogin(() => handleJoinClub(club));
-      }
-
-      if (leaveBtn) {
-        const id = parseInt(leaveBtn.dataset.clubId);
-        handleLeaveClub(id);
-      }
-
-      if (viewBtn) {
-        const card = viewBtn.closest(".bookclub-card");
-        const id = parseInt(card.dataset.clubId);
-        const name = card.querySelector(".bookclub-name").textContent;
-        openClubModal(id, name);
-      }
-    });
-
-    renderYourClubs();
-    renderDynamicClubs();
+  if (!yourClubsGrid || !popularGrid) {
+    console.warn("Bookclub containers not found in DOM.");
+    return;
   }
-};
 
-// Auto-run if the page is loaded directly (not dynamically)
-if (document.querySelector(".bookclubs-page")) {
-  window.bookclubs.initBookclubs();
-}
+  // === SAMPLE DATA ===
+  const demoClubs = [
+    {
+      id: 1,
+      name: "Sci-Fi Explorers",
+      members: 42,
+      desc: "Dive into futuristic worlds and intergalactic adventures.",
+      icon: "fa-rocket",
+    },
+    {
+      id: 2,
+      name: "Romantic Reads",
+      members: 58,
+      desc: "Share heartwarming stories and timeless love tales.",
+      icon: "fa-heart",
+    },
+    {
+      id: 3,
+      name: "Mystery Minds",
+      members: 73,
+      desc: "For those who love unraveling thrilling mysteries.",
+      icon: "fa-search",
+    },
+    {
+      id: 4,
+      name: "Fantasy Fellowship",
+      members: 61,
+      desc: "Where dragons soar and legends are born.",
+      icon: "fa-dragon",
+    },
+    {
+      id: 5,
+      name: "Non-Fiction Nation",
+      members: 50,
+      desc: "Discover the truths and tales of real lives.",
+      icon: "fa-book-open",
+    },
+    {
+      id: 6,
+      name: "Historical Hearts",
+      members: 35,
+      desc: "Travel through time and fall in love with the past.",
+      icon: "fa-landmark",
+    },
+    {
+      id: 7,
+      name: "Crime Scene Readers",
+      members: 40,
+      desc: "Solve mysteries and catch killers through gripping thrillers.",
+      icon: "fa-fingerprint",
+    },
+  ];
+
+  let joinedClubs = [];
+
+  // === FUNCTIONS ===
+  function createClubCard(club, showJoin = true) {
+    const card = document.createElement("div");
+    card.className = "bookclub-card";
+    card.dataset.id = club.id;
+
+    card.innerHTML = `
+      <div class="bookclub-header">
+        <div class="bookclub-avatar"><i class="fas ${club.icon}"></i></div>
+        <div class="bookclub-info">
+          <div class="bookclub-name">${club.name}</div>
+          <div class="bookclub-members">${club.members} members</div>
+        </div>
+      </div>
+      <p class="bookclub-description">${club.desc}</p>
+      <div class="bookclub-actions">
+        ${showJoin ? `<button class="btn-join">Join Club</button>` : ""}
+      </div>
+    `;
+
+    if (showJoin) {
+      const joinBtn = card.querySelector(".btn-join");
+      joinBtn.addEventListener("click", () => joinClub(club, card));
+    }
+
+    return card;
+  }
+
+  function renderSection(container, clubs, showJoin) {
+    container.innerHTML = "";
+    clubs.forEach((c) => container.appendChild(createClubCard(c, showJoin)));
+
+    // optional GSAP animation
+    if (window.gsap) {
+      gsap.from(container.children, {
+        opacity: 0,
+        y: 30,
+        stagger: 0.1,
+        duration: 0.4,
+        ease: "power2.out",
+      });
+    }
+  }
+
+  function joinClub(club, card) {
+    if (!joinedClubs.find((c) => c.id === club.id)) {
+      joinedClubs.push(club);
+      renderSection(yourClubsGrid, joinedClubs, false);
+
+      // Fade out joined club from popular/suggested
+      if (window.gsap) {
+        gsap.to(card, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.3,
+          onComplete: () => card.remove(),
+        });
+      } else {
+        card.remove();
+      }
+    }
+  }
+
+  // === INITIAL RENDER ===
+  const popularSubset = demoClubs.slice(0, 4);
+  const suggestedSubset = demoClubs.slice(4);
+
+  renderSection(popularGrid, popularSubset, true);
+
+  // If you have a "Suggested" section in HTML
+  if (suggestedGrid) renderSection(suggestedGrid, suggestedSubset, true);
+
+  console.log("Bookclubs rendered successfully ");
+});
+
 

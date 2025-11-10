@@ -28,21 +28,24 @@
 
   // Fetch newest novels from Google Books (subject:novel, orderBy=newest)
   async function fetchHottestReads() {
+    const q = encodeURIComponent('subject:novel');
+    const key = GOOGLE_API_KEY ? `&key=${GOOGLE_API_KEY}` : '';
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&orderBy=newest&printType=books&maxResults=${MAX_BOOKS}${key}`;
+
     try {
-      const q = encodeURIComponent('subject:novel');
-      const key = GOOGLE_API_KEY ? `&key=${GOOGLE_API_KEY}` : '';
-      const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&orderBy=newest&printType=books&maxResults=${MAX_BOOKS}${key}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Google Books fetch failed');
+      const res = await fetch(url, { method: 'GET', mode: 'cors' });
+      if (!res.ok) throw new Error(`Google Books fetch failed: ${res.status}`);
       const data = await res.json();
-      if (!data.items || data.items.length === 0) throw new Error('No items');
+      if (!data.items || data.items.length === 0) throw new Error('No items returned');
       return data.items.map(item => {
         const v = item.volumeInfo || {};
         return {
           id: item.id,
           title: v.title || 'Untitled',
           author: (v.authors && v.authors.join(', ')) || 'Unknown',
-          cover: (v.imageLinks && (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail)) ? (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail).replace(/^http:/,'https:') : null,
+          cover: (v.imageLinks && (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail))
+            ? (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail).replace(/^http:/, 'https:')
+            : `https://placehold.co/140x186/CCCCCC/000000?text=${encodeURIComponent(v.title || 'No+Cover')}`,
           description: v.description || v.subtitle || 'No description available.',
           publishedDate: v.publishedDate || '',
           pageCount: v.pageCount || '',
@@ -50,7 +53,8 @@
         };
       });
     } catch (err) {
-      console.warn('Hottest fetch failed, using fallback', err);
+      console.warn('⚠️ Google Books API failed, using fallback data.', err.message);
+      // Always return fallback data to keep UI alive
       return sampleBooks;
     }
   }
@@ -82,7 +86,6 @@
     // click or enter to open modal with animation
     function openHandler(e) {
       e.preventDefault && e.preventDefault();
-      // small "press" animation using GSAP if available
       if (window.gsap) {
         window.gsap.fromTo(card, { scale: 1 }, { scale: 0.98, duration: 0.06, yoyo: true, repeat: 1, onComplete: () => showBookModal(book) });
       } else {
@@ -101,18 +104,10 @@
   // Populate hottest reads area
   async function populateHottestReads() {
     if (!hottestEl) return;
-    hottestEl.innerHTML = ''; // clear
-    // placeholder while fetching
-    const placeholder = document.createElement('div');
-    placeholder.className = 'book-card';
-    placeholder.innerHTML = `<img class="book-cover" src="https://placehold.co/140x186?text=Loading" alt="loading"><div class="book-info"><div class="book-title">Loading...</div></div>`;
-    hottestEl.appendChild(placeholder);
-
+    hottestEl.innerHTML = `<div class="book-card"><img class="book-cover" src="https://placehold.co/140x186?text=Loading" alt="loading"><div class="book-info"><div class="book-title">Loading...</div></div></div>`;
     const books = await fetchHottestReads();
     hottestEl.innerHTML = '';
-    books.forEach(b => {
-      hottestEl.appendChild(createBookCard(b));
-    });
+    books.forEach(b => hottestEl.appendChild(createBookCard(b)));
   }
 
   // Populate currently reading (demo)
@@ -127,8 +122,8 @@
         <div class="currently-reading-info">
           <div style="font-weight:700">${it.title}</div>
           <div style="color:var(--dark-grey);font-size:.9rem">${it.author || ''}</div>
-          <div class="reading-progress"><div class="progress-bar" style="width:${it.progress||40}%"></div></div>
-          <div style="font-size:.85rem;color:var(--dark-grey);margin-top:.4rem">${it.progress||40}% complete</div>
+          <div class="reading-progress"><div class="progress-bar" style="width:${it.progress || 40}%"></div></div>
+          <div style="font-size:.85rem;color:var(--dark-grey);margin-top:.4rem">${it.progress || 40}% complete</div>
         </div>`;
       followingEl.appendChild(c);
     });
@@ -141,27 +136,28 @@
     (items || []).forEach(it => {
       const el = document.createElement('div');
       el.className = 'activity-item';
-      el.innerHTML = `<img class="activity-avatar" src="${it.avatar}" alt="${it.user}" onerror="this.src='https://placehold.co/40x40/CCCCCC/000000?text=U'">
-                      <div class="activity-content">
-                        <div class="activity-user">${it.user}</div>
-                        <div class="activity-text">${renderActivityText(it)}</div>
-                        <div class="activity-time">${it.time}</div>
-                      </div>`;
+      el.innerHTML = `
+        <img class="activity-avatar" src="${it.avatar}" alt="${it.user}" onerror="this.src='https://placehold.co/40x40/CCCCCC/000000?text=U'">
+        <div class="activity-content">
+          <div class="activity-user">${it.user}</div>
+          <div class="activity-text">${renderActivityText(it)}</div>
+          <div class="activity-time">${it.time}</div>
+        </div>`;
       friendsEl.appendChild(el);
     });
   }
 
   function renderActivityText(it) {
-    if (it.action === 'rated') return `rated <strong>${it.target}</strong> · ${'★'.repeat((it.rating||0))}`;
+    if (it.action === 'rated') return `rated <strong>${it.target}</strong> · ${'★'.repeat(it.rating || 0)}`;
     if (it.action === 'added') return `added <strong>${it.target}</strong> to ${it.list || 'a list'}`;
     if (it.action === 'reviewed') return `reviewed <strong>${it.target}</strong>`;
     return `${it.action} <strong>${it.target}</strong>`;
   }
 
-  // Book modal: show details inside #book-modal-content and open modal
+  // Book modal
   function showBookModal(book) {
     if (!bookModal || !bookModalContent) return;
-    const safeCover = book.cover || `https://placehold.co/140x186/CCCCCC/000000?text=${encodeURIComponent(book.title||'No+Cover')}`;
+    const safeCover = book.cover || `https://placehold.co/140x186/CCCCCC/000000?text=${encodeURIComponent(book.title || 'No+Cover')}`;
     bookModalContent.innerHTML = `
       <div style="display:flex;gap:1rem;align-items:flex-start;">
         <img src="${safeCover}" alt="${book.title}" style="width:120px;height:auto;object-fit:cover;border-radius:6px;">
@@ -177,26 +173,23 @@
         <button id="book-modal-close" style="background:#eee;color:#111;padding:.5rem .8rem;border-radius:6px;border:none;cursor:pointer;">Close</button>
       </div>
     `;
-    // open modal (use app.openModal if available)
+
     if (window.app && typeof window.app.openModal === 'function') {
       window.app.openModal('book-modal');
     } else {
-      const m = document.getElementById('book-modal');
-      if (m) m.classList.add('show');
+      bookModal.classList.add('show');
     }
 
-    // wire buttons
     document.getElementById('book-modal-close').addEventListener('click', () => {
       if (window.app && typeof window.app.closeModal === 'function') window.app.closeModal('book-modal');
-      else document.getElementById('book-modal').classList.remove('show');
+      else bookModal.classList.remove('show');
     });
+
     const openExt = document.getElementById('book-modal-open-ext');
-    if (openExt) {
-      openExt.addEventListener('click', () => {
-        const url = book.googleBooksUrl || (`https://books.google.com/books?id=${book.id}`);
-        window.open(url, '_blank');
-      });
-    }
+    if (openExt) openExt.addEventListener('click', () => {
+      const url = book.googleBooksUrl || `https://books.google.com/books?id=${book.id}`;
+      window.open(url, '_blank');
+    });
   }
 
   // Wire search modal
@@ -207,15 +200,10 @@
         e.preventDefault();
         if (window.app && typeof window.app.openModal === 'function') window.app.openModal('search-modal');
         else document.getElementById('search-modal').classList.add('show');
-        // focus input
-        setTimeout(() => {
-          const input = document.getElementById('search-modal-input');
-          if (input) input.focus();
-        }, 80);
+        setTimeout(() => document.getElementById('search-modal-input')?.focus(), 80);
       });
     }
 
-    // close modal button inside search modal
     document.querySelectorAll('#search-modal .close-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         if (window.app && typeof window.app.closeModal === 'function') window.app.closeModal('search-modal');
@@ -224,7 +212,6 @@
     });
   }
 
-  // Init function exposed
   async function initHome() {
     await populateHottestReads();
     populateCurrentlyReading([
@@ -234,34 +221,17 @@
     populateFriendsActivity(sampleActivities);
     wireSearch();
 
-    // wire book modal close by clicking outside or close cross
     const mod = document.getElementById('book-modal');
-    if (mod) {
-      mod.addEventListener('click', (e) => {
-        if (e.target === mod) {
-          if (window.app && typeof window.app.closeModal === 'function') window.app.closeModal('book-modal');
-          else mod.classList.remove('show');
-        }
-      });
-    }
+    if (mod) mod.addEventListener('click', (e) => {
+      if (e.target === mod) {
+        if (window.app && typeof window.app.closeModal === 'function') window.app.closeModal('book-modal');
+        else mod.classList.remove('show');
+      }
+    });
   }
 
-  // Expose
-  window.home = {
-    initHome,
-    populateHottestReads,
-    createBookCard,
-    showBookModal
-  };
+  window.home = { initHome, populateHottestReads, createBookCard, showBookModal };
 
-  // Auto init on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    // call initHome if main already loaded and called it; safe to call twice
-    if (window.app) {
-      initHome();
-    } else {
-      // still initialize anyway
-      initHome();
-    }
-  });
+  document.addEventListener('DOMContentLoaded', () => initHome());
 })();
+

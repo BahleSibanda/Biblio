@@ -1,30 +1,35 @@
-/* style.css — Core layout, nav, side menu, modals, auth, utilities */
+
+/* style.css — Core layout, nav, side menu, modals, auth, utilities (wireframe theme merged) */
 
 /* ---------- Theme variables ---------- */
 :root{
-  --white: #ffffff;
+  --white: #f3e6cf;
   --black: #000000;
-  --light-grey: #F5F5F5;
-  --medium-grey: #E0E0E0;
-  --dark-grey: #757575;
-  --dark-azure: #143035;
+  --light-grey: #d8d1b8;
+  --medium-grey: #bfb493;
+  --dark-grey: #4b4b3f;
+  --dark-azure: #2f3528; /* renamed to earthy dark brown-green */
   --dark-grey-brown: #312021;
-  --orange: #F08E37;
-  --shadow: 0 8px 20px rgba(18, 24, 26, 0.06);
+  --orange: #f08e37;
+  --olive-bg: #6a8a59;
+  --olive-panel: #425846;
+  --cream: #f3e6cf;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   --max-width: 1200px;
-  --glass: rgba(255,255,255,0.6);
+  --glass: rgba(255,255,255,0.04);
 }
 
 /* ---------- Reset & base ---------- */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: #f3f6f4;
-  color:var(--black);
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial;
+  background: var(--olive-bg);
+  color:var(--cream);
   margin:0;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  transition: background .3s ease;
 }
 
 /* Link / button defaults */
@@ -49,13 +54,11 @@ button{font-family:inherit}
   justify-content:space-between;
   gap:1rem;
   padding:.9rem 1.25rem;
-  background:var(--white);
-  border-bottom:1px solid rgba(0,0,0,0.04);
+  background:var(--cream);
+  border-bottom:1px solid rgba(0,0,0,0.1);
   z-index:1200;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
-
-/* Logo area (editable in HTML) */
 .top-nav .logo{
   display:flex;
   gap:.6rem;
@@ -66,7 +69,7 @@ button{font-family:inherit}
   cursor:text;
 }
 .top-nav .logo i{font-size:1.2rem}
-.top-nav .logo img{height:36px;display:none}
+.top-nav .logo img{height:38px;display:none}
 
 /* Nav links */
 .nav-links{
@@ -75,32 +78,38 @@ button{font-family:inherit}
   align-items:center;
 }
 .nav-links a{
-  padding:.45rem .75rem;
-  border-radius:8px;
+  padding:.45rem .9rem;
+  border-radius:12px;
   font-weight:600;
+  background: var(--cream);
   color:var(--dark-azure);
   font-size:.95rem;
-  transition: background .15s, color .15s, transform .12s;
+  border:1px solid rgba(0,0,0,0.05);
+  transition: background .2s, color .2s, transform .12s;
 }
-.nav-links a.active{
-  background:var(--orange);
-  color:var(--white);
-  transform:translateY(-1px);
+.nav-links a.active,
+.nav-links a:hover{
+  background:var(--olive-panel);
+  color:var(--cream);
+  transform:translateY(-2px);
 }
 
 /* User actions (login / signup) */
-.user-actions{display:flex;gap:.5rem;align-items:center}
+.user-actions{display:flex;gap:.6rem;align-items:center}
 .cta{
-  background:var(--dark-azure);
-  color:var(--white);
+  background:var(--cream);
+  color:var(--dark-azure);
   border:none;
-  padding:.45rem .75rem;
-  border-radius:6px;
+  padding:.45rem .85rem;
+  border-radius:10px;
   cursor:pointer;
   font-weight:600;
   transition:transform .12s, box-shadow .12s;
 }
-.cta:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,0.08)}
+.cta:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 12px rgba(0,0,0,0.15);
+}
 
 /* ---------- Side icon menu ---------- */
 .side-menu{
@@ -111,14 +120,12 @@ button{font-family:inherit}
   display:flex;
   flex-direction:column;
   gap:.6rem;
-  background: linear-gradient(180deg, rgba(255,232,197,0.98), rgba(255,232,197,0.95));
+  background: linear-gradient(180deg, var(--olive-panel), var(--olive-bg));
   padding:.6rem;
   border-radius:0 10px 10px 0;
-  box-shadow:0 10px 30px rgba(0,0,0,0.06);
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
   z-index:1100;
 }
-
-/* Each icon anchor */
 .side-menu .side-item{
   display:inline-flex;
   align-items:center;
@@ -126,17 +133,16 @@ button{font-family:inherit}
   width:48px;
   height:48px;
   border-radius:10px;
-  color:var(--dark-azure);
+  color:var(--cream);
   text-decoration:none;
   position:relative;
   transition:background .15s, transform .12s;
 }
-.side-menu .side-item:hover{background:rgba(0,0,0,0.04); transform:translateY(-2px);}
-
-/* Icon class — customizable */
-.side-item .icon{font-size:1.05rem}
-
-/* notification badge */
+.side-menu .side-item:hover{
+  background:rgba(255,255,255,0.15);
+  transform:translateY(-2px);
+}
+.side-item .icon{font-size:1.1rem}
 .notification-badge{
   position:absolute;
   top:6px;
@@ -150,7 +156,7 @@ button{font-family:inherit}
   box-shadow:0 4px 10px rgba(0,0,0,0.08);
 }
 
-/* ---------- Desktop: place side menu at bottom center ---------- */
+/* ---------- Desktop: side menu bottom center ---------- */
 @media(min-width:992px){
   .side-menu{
     left:50%;
@@ -158,23 +164,22 @@ button{font-family:inherit}
     bottom:20px;
     top:auto;
     flex-direction:row;
-    padding:.4rem .6rem;
     border-radius:999px;
   }
-  .side-menu .side-item{width:52px;height:52px;border-radius:12px}
 }
 
-/* ---------- Content box (cards/sections) ---------- */
+/* ---------- Content box ---------- */
 .content-box{
-  background:var(--white);
+  background:linear-gradient(180deg,var(--olive-panel), var(--olive-bg));
   border-radius:10px;
   padding:1rem;
   margin-bottom:1rem;
   box-shadow: var(--shadow);
-  border:1px solid rgba(0,0,0,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  color: var(--cream);
 }
 
-/* Section header (title + see all) */
+/* Section header */
 .section-header{
   display:flex;
   align-items:center;
@@ -183,83 +188,45 @@ button{font-family:inherit}
   margin-bottom:.6rem;
 }
 
-/* utility hidden */
-.hidden{display:none !important}
-
 /* ---------- Modal base ---------- */
 .modal, .auth-modal{
   display:none;
   position:fixed;
   inset:0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.55);
   z-index:2000;
   justify-content:center;
   align-items:center;
   padding:1rem;
 }
 .modal.show, .auth-modal.show{display:flex}
-
-/* Modal content */
 .modal-content, .auth-modal-content{
   width:100%;
   max-width:780px;
-  background:var(--white);
+  background:var(--cream);
   border-radius:10px;
   padding:1rem;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.12);
-  overflow:auto;
+  color:var(--dark-azure);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
-
-/* Small internal spacing for modal headers/close */
 .modal .close-modal, .auth-modal .close-auth-modal{
-  background:none;border:none;font-size:1.4rem;cursor:pointer;
+  background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--dark-azure);
 }
 
-/* ---------- AUTH styles (tabs & forms) ---------- */
-.auth-tabs{display:flex;gap:.5rem;margin-bottom:.75rem}
-.auth-tab{
-  background:transparent;border:1px solid rgba(0,0,0,0.05);padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-weight:600;
-}
-.auth-tab.active{background:var(--orange);color:#fff;border-color:var(--orange);}
-
-/* Generic input styling used by auth and search */
+/* ---------- Auth ---------- */
+.auth-tab.active{background:var(--orange);color:#fff;border-color:var(--orange)}
 .form-input, .auth-form input{
-  width:100%;
-  padding:.6rem .75rem;
-  border-radius:8px;
   border:1px solid var(--medium-grey);
-  background:transparent;
-  margin-bottom:.6rem;
-  font-size:1rem;
+  background:var(--white);
+  color:var(--dark-azure);
 }
-.form-input:focus, .auth-form input:focus{outline:none;border-color:var(--orange);box-shadow:0 4px 18px rgba(240,142,55,0.07);}
-
-/* Auth buttons */
-.auth-submit{background:var(--orange);color:#fff;padding:.6rem .9rem;border:none;border-radius:8px;cursor:pointer;font-weight:700}
-.auth-submit:hover{transform:translateY(-2px)}
-
-/* ---------- Small utilities ---------- */
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
-.center{display:flex;justify-content:center;align-items:center}
-
-/* ---------- Page-specific placeholders (safe defaults) ---------- */
-.book-cover, .currently-reading-cover, .activity-avatar{background:#eee;display:block;object-fit:cover}
-
-/* Provide class to show login requirement tooltip (JS can toggle) */
-.requires-login[data-locked="true"]::after{
-  content:"Requires login";
-  position:absolute;
-  bottom:calc(100% + 6px);
-  left:50%;
-  transform:translateX(-50%);
-  background:var(--dark-grey-brown);
+.auth-submit{
+  background:var(--orange);
   color:#fff;
-  padding:.25rem .45rem;
-  font-size:.75rem;
-  border-radius:6px;
-  white-space:nowrap;
-  display:block;
+  font-weight:700;
+  border:none;
+  border-radius:10px;
+  padding:.6rem .9rem;
+  transition:transform .15s;
 }
-
-/* Allow devs to easily customize side icons colors via classes */
-.side-item.custom-orange{background:linear-gradient(45deg,var(--orange), #d9741b); color:#fff}
+.auth-submit:hover{transform:translateY(-2px)}

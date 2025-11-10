@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,125 +37,52 @@
     </div>
   </nav>
 
-  <!-- SIDE MENU -->
-  <div class="side-menu">
-    <a href="../index.html" title="Home" class="side-item"><i class="fas fa-home"></i></a>
-    <a href="#" id="search-modal-btn" title="Search" class="side-item"><i class="fas fa-search"></i></a>
-    <a href="#" data-page="notifications" title="Notifications" class="side-item requires-login"><i class="fas fa-bell"></i></a>
-    <a href="#" data-page="profile" title="Profile" class="side-item requires-login"><i class="fas fa-user"></i></a>
-    <a href="#" data-page="settings" title="Settings" class="side-item requires-login"><i class="fas fa-cog"></i></a>
+  <!-- SEARCH BAR -->
+  <div class="search-bar container" style="margin-top:1.5rem; text-align:center;">
+    <input type="text" id="club-search" placeholder="Search for a book club..." style="width:80%; max-width:500px; padding:0.7rem; border:1px solid #ccc; border-radius:8px; font-size:1rem;">
   </div>
 
   <!-- MAIN CONTENT -->
   <div class="bookclubs-page container">
-    <!-- Your Book Clubs -->
+
+    <!-- YOUR BOOK CLUBS -->
     <div class="section-header">
       <h2 class="section-title">Your Book Clubs</h2>
-      <a href="#" class="see-all">See All</a>
+      <a href="#" class="see-all" data-section="your-bookclubs">See All</a>
     </div>
     <div class="bookclubs-grid" id="your-bookclubs">
       <p style="color: var(--dark-grey); font-size: 0.95rem;">You haven’t joined any clubs yet. Join one below!</p>
     </div>
 
-    <!-- Popular Book Clubs -->
+    <!-- POPULAR BOOK CLUBS -->
     <div class="section-header" style="margin-top: 3rem;">
       <h2 class="section-title">Popular Book Clubs</h2>
-      <a href="#" class="see-all">See All</a>
+      <a href="#" class="see-all" data-section="popular-bookclubs">See All</a>
     </div>
-    <div class="bookclubs-grid" id="popular-bookclubs">
-      <!-- Static Demo Clubs -->
-      <div class="bookclub-card" data-club-id="1">
-        <div class="bookclub-header">
-          <div class="bookclub-avatar" style="background: #f1f1f1; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-rocket"></i>
-          </div>
-          <div class="bookclub-info">
-            <div class="bookclub-name">Sci-Fi Explorers</div>
-            <div class="bookclub-members">42 members</div>
-          </div>
-        </div>
-        <p class="bookclub-description">
-          Dive into futuristic worlds and intergalactic adventures with fellow sci-fi lovers.
-        </p>
-        <div class="bookclub-actions">
-          <button class="btn-view">Open Club</button>
-          <button class="btn-join">Join Club</button>
-        </div>
-      </div>
+    <div class="bookclubs-grid" id="popular-bookclubs"></div>
 
-      <div class="bookclub-card" data-club-id="2">
-        <div class="bookclub-header">
-          <div class="bookclub-avatar" style="background: #f1f1f1; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-heart"></i>
-          </div>
-          <div class="bookclub-info">
-            <div class="bookclub-name">Romantic Reads</div>
-            <div class="bookclub-members">58 members</div>
-          </div>
-        </div>
-        <p class="bookclub-description">
-          Share your favorite heartwarming stories and discuss timeless love tales.
-        </p>
-        <div class="bookclub-actions">
-          <button class="btn-view">Open Club</button>
-          <button class="btn-join">Join Club</button>
-        </div>
-      </div>
-
-      <div class="bookclub-card" data-club-id="3">
-        <div class="bookclub-header">
-          <div class="bookclub-avatar" style="background: #f1f1f1; display:flex; align-items:center; justify-content:center;">
-            <i class="fas fa-search"></i>
-          </div>
-          <div class="bookclub-info">
-            <div class="bookclub-name">Mystery Minds</div>
-            <div class="bookclub-members">73 members</div>
-          </div>
-        </div>
-        <p class="bookclub-description">
-          For those who love unraveling thrilling mysteries and crime novels.
-        </p>
-        <div class="bookclub-actions">
-          <button class="btn-view">Open Club</button>
-          <button class="btn-join">Join Club</button>
-        </div>
-      </div>
+    <!-- SUGGESTED BOOK CLUBS -->
+    <div class="section-header" style="margin-top: 3rem;">
+      <h2 class="section-title">Suggested Book Clubs</h2>
+      <a href="#" class="see-all" data-section="suggested-bookclubs">See All</a>
     </div>
-
-    <!-- Dynamic bookclubs -->
-    <div class="bookclubs-grid" id="dynamic-bookclubs"></div>
+    <div class="bookclubs-grid" id="suggested-bookclubs"></div>
   </div>
 
-  <!-- DISCUSSION MODAL -->
-  <div class="modal" id="club-modal">
-    <div class="modal-content" style="max-width: 600px;">
-      <button class="close-modal">&times;</button>
-      <h3 id="club-modal-title">Book Club</h3>
-      <div id="club-posts"></div>
-      <form id="club-post-form">
-        <textarea id="club-post-input" placeholder="Share your thoughts..." required></textarea>
-        <button type="submit" class="cta" style="margin-top: 0.5rem;">Post</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- AUTH MODAL (reuse existing) -->
+  <!-- AUTH MODAL -->
   <div class="auth-modal" id="auth-modal" aria-hidden="true">
     <div class="auth-modal-content">
       <button class="close-auth-modal">&times;</button>
-
       <div class="auth-tabs">
         <button id="tab-login" class="auth-tab active">Log In</button>
         <button id="tab-signup" class="auth-tab">Sign Up</button>
       </div>
-
       <form id="login-form" class="auth-form">
         <h3>Welcome back</h3>
         <input type="email" id="login-email" placeholder="Email" required>
         <input type="password" id="login-password" placeholder="Password" required>
         <button type="submit" class="auth-submit">Log In</button>
       </form>
-
       <form id="signup-form" class="auth-form hidden">
         <h3>Create an account</h3>
         <input type="text" id="signup-name" placeholder="Full Name" required>
@@ -166,7 +94,10 @@
   </div>
 
   <!-- JS -->
-  <script src="../js/bookclubs.js"></script>
-  <script src="../js/auth.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+ <script src="../js/bookclubs.js" defer></script>
+ <script src="../js/auth.js" defer></script>
+
 </body>
 </html>
+

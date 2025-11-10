@@ -240,7 +240,13 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  let analytics;
+try {
+  analytics = getAnalytics(app);
+} catch (err) {
+  console.warn("Analytics not available:", err.message);
+}
+
   const auth = getAuth(app);
   const db = getFirestore(app);
 
