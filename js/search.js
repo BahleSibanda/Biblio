@@ -1,5 +1,6 @@
 // js/search.js
-// Live search using Google Books API + smooth GSAP animations
+// Google Books API live search with GSAP animation and fixed modal behavior
+
 document.addEventListener("DOMContentLoaded", () => {
   setupSearchModal();
 });
@@ -7,26 +8,29 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupSearchModal() {
   const searchInput = document.getElementById("search-modal-input");
   const modal = document.getElementById("search-modal");
+  const resultsContainer = document.getElementById("search-modal-results");
 
-  if (!searchInput || !modal) return;
+  if (!searchInput || !modal || !resultsContainer) return;
 
-  // Debounced input search
   let searchTimeout;
+
+  // Debounced search input
   searchInput.addEventListener("input", function () {
     clearTimeout(searchTimeout);
     const query = this.value.trim();
     searchTimeout = setTimeout(() => performSearch(query), 500);
   });
 
-  // Clear results when modal closes (clicking outside)
+  // ✅ Only clear results when the modal *actually closes*,
+  // not when you click inside it or while results are visible.
   modal.addEventListener("click", function (e) {
-    if (e.target === this) {
+    if (e.target.classList.contains("close-modal")) {
       clearSearchResults();
     }
   });
 }
 
-// ✅ Real API search
+// Actual Google Books API search
 async function performSearch(query) {
   const resultsContainer = document.getElementById("search-modal-results");
   if (!resultsContainer) return;
@@ -36,7 +40,7 @@ async function performSearch(query) {
     return;
   }
 
-  // Show loading animation
+  // Show loading
   resultsContainer.innerHTML = `
     <div style="padding: 2rem; text-align: center;">
       <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--orange);margin-bottom:1rem;"></i>
@@ -80,7 +84,7 @@ async function performSearch(query) {
       return;
     }
 
-    displaySearchResults(items, query);
+    displaySearchResults(items);
   } catch (err) {
     console.error("Search failed:", err);
     resultsContainer.innerHTML = `
@@ -93,7 +97,7 @@ async function performSearch(query) {
   }
 }
 
-function displaySearchResults(books, query) {
+function displaySearchResults(books) {
   const resultsContainer = document.getElementById("search-modal-results");
   if (!resultsContainer) return;
 
@@ -111,8 +115,8 @@ function displaySearchResults(books, query) {
       </div>
     `;
 
-    // Open external link (Google Books)
-    bookEl.querySelector(".view-book").addEventListener("click", () => {
+    bookEl.querySelector(".view-book").addEventListener("click", (e) => {
+      e.stopPropagation();
       if (book.infoLink && book.infoLink.startsWith("http")) {
         window.open(book.infoLink, "_blank");
       }
@@ -133,6 +137,7 @@ function displaySearchResults(books, query) {
   }
 }
 
+// Reset results properly
 function clearSearchResults() {
   const resultsContainer = document.getElementById("search-modal-results");
   const searchInput = document.getElementById("search-modal-input");
@@ -146,16 +151,13 @@ function clearSearchResults() {
   if (searchInput) searchInput.value = "";
 }
 
-// Modal animation when opened
+// Smooth intro animation for modal
 document.getElementById("search-modal").addEventListener("transitionend", (e) => {
   if (e.target.id === "search-modal" && e.target.classList.contains("show")) {
-    initSearchAnimations();
+    if (window.gsap) {
+      gsap.from("#search-modal-input", { duration: 0.5, opacity: 0, y: -10, ease: "power2.out" });
+      gsap.from(".modal-content", { duration: 0.5, scale: 0.9, opacity: 0, ease: "back.out(1.7)" });
+    }
   }
 });
 
-function initSearchAnimations() {
-  if (window.gsap) {
-    gsap.from("#search-modal-input", { duration: 0.5, opacity: 0, y: -10, ease: "power2.out" });
-    gsap.from(".modal-content", { duration: 0.5, scale: 0.9, opacity: 0, ease: "back.out(1.7)" });
-  }
-}
