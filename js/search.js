@@ -1,135 +1,161 @@
-// Search modal functionality
-document.addEventListener('DOMContentLoaded', function() {
-    setupSearchModal();
+// js/search.js
+// Live search using Google Books API + smooth GSAP animations
+document.addEventListener("DOMContentLoaded", () => {
+  setupSearchModal();
 });
 
 function setupSearchModal() {
-    const searchInput = document.getElementById('search-modal-input');
-    /*const searchError = document.getElementById('search-modal-error');*/
-    
-    if (searchInput) {
-        // Real-time search with debouncing
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performSearch(this.value);
-            }, 500);
-        });
-        
-        // Form validation
-        /*searchInput.addEventListener('blur', function() {
-            if (this.value.length > 0 && this.value.length < 2) {
-                showError('search-modal-error', 'Search term must be at least 2 characters');
-            } else {
-                hideError('search-modal-error');
-            }
-        });*/
-        
-        // Clear results when modal opens
-        document.getElementById('search-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                clearSearchResults();
-            }
-        });
+  const searchInput = document.getElementById("search-modal-input");
+  const modal = document.getElementById("search-modal");
+
+  if (!searchInput || !modal) return;
+
+  // Debounced input search
+  let searchTimeout;
+  searchInput.addEventListener("input", function () {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    searchTimeout = setTimeout(() => performSearch(query), 500);
+  });
+
+  // Clear results when modal closes (clicking outside)
+  modal.addEventListener("click", function (e) {
+    if (e.target === this) {
+      clearSearchResults();
     }
+  });
 }
 
-function performSearch(query) {
-    const resultsContainer = document.getElementById('search-modal-results');
-    if (!resultsContainer) return;
-    
-    if (!query || query.length < 2) {
-        resultsContainer.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--dark-grey);">Enter at least 2 characters to search</p>';
-        return;
-    }
-    
-    // Show loading state
-    resultsContainer.innerHTML = `
-        <div style="padding: 2rem; text-align: center;">
-            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--orange); margin-bottom: 1rem;"></i>
-            <p>Searching for "${query}"...</p>
+// ✅ Real API search
+async function performSearch(query) {
+  const resultsContainer = document.getElementById("search-modal-results");
+  if (!resultsContainer) return;
+
+  if (!query || query.length < 2) {
+    resultsContainer.innerHTML = `<p style="padding:2rem;text-align:center;color:var(--dark-grey);">Enter at least 2 characters to search</p>`;
+    return;
+  }
+
+  // Show loading animation
+  resultsContainer.innerHTML = `
+    <div style="padding: 2rem; text-align: center;">
+      <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--orange);margin-bottom:1rem;"></i>
+      <p>Searching for "<strong>${query}</strong>"...</p>
+    </div>
+  `;
+
+  try {
+    const GOOGLE_API_KEY = window.GOOGLE_API_KEY || "";
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+      query
+    )}&printType=books&maxResults=12${GOOGLE_API_KEY ? `&key=${GOOGLE_API_KEY}` : ""}`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch results");
+
+    const data = await response.json();
+    const items = (data.items || []).map((item) => {
+      const v = item.volumeInfo || {};
+      return {
+        id: item.id,
+        title: v.title || "Untitled",
+        author: (v.authors && v.authors.join(", ")) || "Unknown Author",
+        description: v.description || "No description available.",
+        cover:
+          (v.imageLinks && (v.imageLinks.thumbnail || v.imageLinks.smallThumbnail))
+            ?.replace(/^http:/, "https:") ||
+          "https://placehold.co/128x180?text=No+Cover",
+        infoLink: v.infoLink || "#",
+      };
+    });
+
+    if (!items.length) {
+      resultsContainer.innerHTML = `
+        <div style="text-align:center;padding:2rem;">
+          <i class="fas fa-search" style="font-size:3rem;color:var(--dark-grey);margin-bottom:1rem;"></i>
+          <p>No books found for "${query}"</p>
+          <p style="color:var(--dark-grey);">Try different keywords</p>
         </div>
+      `;
+      return;
+    }
+
+    displaySearchResults(items, query);
+  } catch (err) {
+    console.error("Search failed:", err);
+    resultsContainer.innerHTML = `
+      <div style="text-align:center;padding:2rem;color:var(--dark-grey);">
+        <i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--orange);margin-bottom:1rem;"></i>
+        <p>Could not load search results.</p>
+        <p style="font-size:.9rem;">Check your internet connection or try again later.</p>
+      </div>
     `;
-    
-    // Simulate API call to Google Books API
-    setTimeout(() => {
-        const filteredBooks = sampleBooks.filter(book => 
-            book.title.toLowerCase().includes(query.toLowerCase()) ||
-            book.author.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        displaySearchResults(filteredBooks, query);
-    }, 1000);
+  }
 }
 
 function displaySearchResults(books, query) {
-    const resultsContainer = document.getElementById('search-modal-results');
-    
-    if (books.length === 0) {
-        resultsContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem;">
-                <i class="fas fa-search" style="font-size: 3rem; color: var(--dark-grey); margin-bottom: 1rem;"></i>
-                <p>No books found for "${query}"</p>
-                <p style="color: var(--dark-grey);">Try different keywords or check your spelling</p>
-            </div>
-        `;
-        return;
-    }
-    
-    resultsContainer.innerHTML = '';
-    
-    books.forEach(book => {
-        const bookElement = createBookElement(book);
-        resultsContainer.appendChild(bookElement);
+  const resultsContainer = document.getElementById("search-modal-results");
+  if (!resultsContainer) return;
+
+  resultsContainer.innerHTML = "";
+
+  books.forEach((book) => {
+    const bookEl = document.createElement("div");
+    bookEl.className = "book-card";
+    bookEl.innerHTML = `
+      <img src="${book.cover}" alt="${book.title}" class="book-cover" />
+      <div class="book-info">
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">${book.author}</div>
+        <button class="cta view-book" style="margin-top:0.5rem;">View</button>
+      </div>
+    `;
+
+    // Open external link (Google Books)
+    bookEl.querySelector(".view-book").addEventListener("click", () => {
+      if (book.infoLink && book.infoLink.startsWith("http")) {
+        window.open(book.infoLink, "_blank");
+      }
     });
-    
-    // Animate search results
-    gsap.from('.book-card', {
-        duration: 0.6,
-        y: 30,
-        opacity: 0,
-        stagger: 0.1,
-        ease: 'back.out(1.7)'
+
+    resultsContainer.appendChild(bookEl);
+  });
+
+  // GSAP animation
+  if (window.gsap) {
+    gsap.from(".book-card", {
+      duration: 0.5,
+      y: 25,
+      opacity: 0,
+      stagger: 0.08,
+      ease: "power2.out",
     });
+  }
 }
 
 function clearSearchResults() {
-    const resultsContainer = document.getElementById('search-modal-results');
-    const searchInput = document.getElementById('search-modal-input');
-    
-    if (resultsContainer) {
-        resultsContainer.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--dark-grey);">Search for books to get started</p>';
-    }
-    
-    if (searchInput) {
-        searchInput.value = '';
-    }
-    
-    hideError('search-modal-error');
+  const resultsContainer = document.getElementById("search-modal-results");
+  const searchInput = document.getElementById("search-modal-input");
+
+  if (resultsContainer) {
+    resultsContainer.innerHTML = `
+      <p style="padding:2rem;text-align:center;color:var(--dark-grey);">
+        Search for books or authors to get started
+      </p>`;
+  }
+  if (searchInput) searchInput.value = "";
 }
 
-// Initialize search modal animations when it opens
-document.getElementById('search-modal').addEventListener('click', function() {
-    if (this.style.display === 'flex') {
-        initSearchAnimations();
-    }
+// Modal animation when opened
+document.getElementById("search-modal").addEventListener("transitionend", (e) => {
+  if (e.target.id === "search-modal" && e.target.classList.contains("show")) {
+    initSearchAnimations();
+  }
 });
 
 function initSearchAnimations() {
-    // Search input animation
-    gsap.from('#search-modal-input', {
-        duration: 0.5,
-        width: 0,
-        opacity: 0,
-        ease: 'power2.out'
-    });
-    
-    // Modal content animation
-    gsap.from('.modal-content', {
-        duration: 0.6,
-        scale: 0.8,
-        opacity: 0,
-        ease: 'back.out(1.7)'
-    });
+  if (window.gsap) {
+    gsap.from("#search-modal-input", { duration: 0.5, opacity: 0, y: -10, ease: "power2.out" });
+    gsap.from(".modal-content", { duration: 0.5, scale: 0.9, opacity: 0, ease: "back.out(1.7)" });
+  }
 }

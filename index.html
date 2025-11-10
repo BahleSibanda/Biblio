@@ -1,275 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblio - Connect through stories</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biblio - Connect through stories</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Serif+Pro:wght@400;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Serif+Pro:wght@400;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/page.css">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/page.css">
 </head>
 
 <body>
-
-    <!-- TOP NAVIGATION -->
-    <nav class="top-nav">
-        <div class="logo">
-            <i class="fas fa-book-open"></i>
-            <span>Biblio</span>
-        </div>
-
-        <div class="nav-links">
-            <a href="#" class="active" data-page="home">HOME</a>
-            <a href="#" class="requires-login" data-page="bookclubs">BOOKCLUBS</a>
-            <a href="#" class="requires-login" data-page="following">FOLLOWING</a>
-        </div>
-
-        <div class="user-actions">
-            <button id="open-login-modal" class="cta">LOG IN</button>
-            <button id="open-signup-modal" class="cta">SIGN UP</button>
-        </div>
-    </nav>
-
-
-    <!--SIDE ICON MENU -->
-    <div class="side-menu">
-        <a href="#" data-page="home" title="Home" class="side-item">
-            <i class="fas fa-home icon"></i>
-        </a>
-
-        <a href="#" id="search-modal-btn" title="Search" class="side-item">
-            <i class="fas fa-search icon"></i>
-        </a>
-
-        <a href="#" data-page="notifications" title="Notifications" class="side-item requires-login">
-            <i class="fas fa-bell icon"></i>
-            <span class="notification-badge">3</span>
-        </a>
-
-        <a href="#" data-page="profile" title="Profile" class="side-item requires-login">
-            <i class="fas fa-user icon"></i>
-        </a>
-
-        <a href="#" data-page="settings" title="Settings" class="side-item requires-login">
-            <i class="fas fa-cog icon"></i>
-        </a>
+  <!-- TOP NAVIGATION -->
+  <nav class="top-nav">
+    <div class="logo">
+      <i class="fas fa-book-open"></i>
+      <span>Biblio</span>
     </div>
 
-
-
-    <!--MAIN CONTENT -->
-    <div class="container">
-
-        <!-- HOME PAGE -->
-        <div id="home-page" class="page active">
-
-            <!--Hottest Reads Section -->
-            <div class="content-box">
-                <div class="section-header">
-                    <h2 class="section-title">Hottest Reads</h2>
-                    <a href="#" class="see-all">See All</a>
-                </div>
-
-                <div class="books-grid" id="hottest-reads">
-                    <div class="book-card">
-                        <img src="https://placehold.co/100x140?text=Loading..." alt="Book cover" class="book-cover">
-                        <div class="book-info">
-                            <div class="book-title">Loading books...</div>
-                            <div class="book-author">Please wait</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Currently Reading -->
-            <div class="content-box">
-                <div class="section-header">
-                    <h2 class="section-title">Currently Reading</h2>
-                    <a href="#" class="see-all">See All</a>
-                </div>
-
-                <div class="horizontal-scroll" id="currently-reading">
-                    <div class="currently-reading-card">
-                        <img src="https://placehold.co/80x120?text=Book" alt="Currently reading" class="currently-reading-cover">
-                        <div class="currently-reading-info">
-                            <div class="currently-reading-title">Your current book</div>
-                            <div class="currently-reading-author">Author name</div>
-
-                            <div class="reading-progress">
-                                <div class="progress-bar" style="width: 45%"></div>
-                            </div>
-
-                            <div class="progress-text">45% complete</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Friends Activity -->
-            <div class="content-box">
-                <div class="section-header">
-                    <h2 class="section-title">Latest from Friends</h2>
-                    <a href="#" class="see-all">See All</a>
-                </div>
-
-                <div class="friends-activity" id="friends-activity">
-                    <div class="activity-item">
-                        <img src="https://placehold.co/40x40?text=U" alt="User" class="activity-avatar">
-                        <div class="activity-content">
-                            <div class="activity-user">BookLover42</div>
-                            <div class="activity-text">started reading <strong>The Midnight Library</strong></div>
-                            <div class="activity-time">2 hours ago</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Dynamic Pages will load here -->
-        <div id="page-content"></div>
+    <div class="nav-links">
+      <a href="#" class="active" data-page="home">HOME</a>
+      <a href="#" class="requires-login" data-page="bookclubs">BOOKCLUBS</a>
+      <a href="#" class="requires-login" data-page="following">FOLLOWING</a>
     </div>
 
+    <div class="user-actions">
+      <button id="open-login-modal" class="cta">LOG IN</button>
+      <button id="open-signup-modal" class="cta">SIGN UP</button>
+    </div>
+  </nav>
 
+  <!-- SIDE ICON MENU -->
+  <div class="side-menu">
+    <a href="#" data-page="home" title="Home" class="side-item"><i class="fas fa-home icon"></i></a>
+    <a href="#" id="search-modal-btn" title="Search" class="side-item"><i class="fas fa-search icon"></i></a>
+    <a href="#" data-page="notifications" title="Notifications" class="side-item requires-login"><i class="fas fa-bell icon"></i><span class="notification-badge">3</span></a>
+    <a href="#" data-page="profile" title="Profile" class="side-item requires-login"><i class="fas fa-user icon"></i></a>
+    <a href="#" data-page="settings" title="Settings" class="side-item requires-login"><i class="fas fa-cog icon"></i></a>
+  </div>
 
-    <!--SEARCH MODAL -->
-    <div class="modal" id="search-modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Search Books</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-
-            <div class="form-group">
-                <input type="text" id="search-modal-input" class="form-input" placeholder="Search for books, authors, or genres...">
-            </div>
-
-            <div class="books-grid" id="search-modal-results" style="max-height: 400px; overflow-y: auto;">
-                <div class="book-card">
-                    <img src="https://placehold.co/100x140?text=Search" alt="Search results" class="book-cover">
-                    <div class="book-info">
-                        <div class="book-title">Search for books</div>
-                        <div class="book-author">Results will appear here</div>
-                    </div>
-                </div>
-            </div>
+  <!-- MAIN CONTENT -->
+  <div class="container">
+    <!-- HOME PAGE -->
+    <div id="home-page" class="page active">
+      <div class="content-box">
+        <div class="section-header">
+          <h2 class="section-title">Hottest Reads</h2>
+          <a href="#" class="see-all">See All</a>
         </div>
+        <div class="books-grid" id="hottest-reads">
+          <div class="book-card">
+            <img src="https://placehold.co/100x140?text=Loading..." alt="Book cover" class="book-cover">
+            <div class="book-info">
+              <div class="book-title">Loading books...</div>
+              <div class="book-author">Please wait</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Currently Reading -->
+      <div class="content-box">
+        <div class="section-header">
+          <h2 class="section-title">Currently Reading</h2>
+          <a href="#" class="see-all">See All</a>
+        </div>
+        <div class="horizontal-scroll" id="currently-reading">
+          <div class="currently-reading-card">
+            <img src="https://placehold.co/80x120?text=Book" alt="Currently reading" class="currently-reading-cover">
+            <div class="currently-reading-info">
+              <div class="currently-reading-title">Your current book</div>
+              <div class="currently-reading-author">Author name</div>
+              <div class="reading-progress"><div class="progress-bar" style="width:45%"></div></div>
+              <div class="progress-text">45% complete</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends Activity -->
+      <div class="content-box">
+        <div class="section-header">
+          <h2 class="section-title">Latest from Friends</h2>
+          <a href="#" class="see-all">See All</a>
+        </div>
+        <div class="friends-activity" id="friends-activity">
+          <div class="activity-item">
+            <img src="https://placehold.co/40x40?text=U" alt="User" class="activity-avatar">
+            <div class="activity-content">
+              <div class="activity-user">BookLover42</div>
+              <div class="activity-text">started reading <strong>The Midnight Library</strong></div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Dynamic Pages load here -->
+    <div id="page-content"></div>
+  </div>
 
-
-    <!--BOOK DETAILS MODAL -->
-    <div id="book-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="book-modal-title">Book Details</h2>
-            <div id="book-modal-content"></div>
+  <!-- SEARCH MODAL -->
+  <div class="modal" id="search-modal">
+    <div class="modal-content" style="max-width:800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Search Books</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <div class="form-group">
+        <input type="text" id="search-modal-input" class="form-input" placeholder="Search for books, authors, or genres...">
+      </div>
+      <div class="books-grid" id="search-modal-results" style="max-height:400px;overflow-y:auto;">
+        <div class="book-card">
+          <img src="https://placehold.co/100x140?text=Search" alt="Search results" class="book-cover">
+          <div class="book-info">
+            <div class="book-title">Search for books</div>
+            <div class="book-author">Results will appear here</div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-
-
-    <!-- LOGIN + SIGNUP MODAL (combined) -->
-    <div class="auth-modal" id="auth-modal" aria-hidden="true">
-        <div class="auth-modal-content">
-            <button class="close-auth-modal">&times;</button>
-
-            <div class="auth-tabs">
-                <button id="tab-login" class="auth-tab active">Log In</button>
-                <button id="tab-signup" class="auth-tab">Sign Up</button>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <form id="login-form" class="auth-form">
-                <h3>Welcome back</h3>
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit" class="auth-submit">Log In</button>
-            </form>
-
-            <!-- SIGNUP FORM -->
-            <form id="signup-form" class="auth-form">
-                <h3>Create an account</h3>
-                <input type="text" id="signup-name" placeholder="Full Name" required>
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
-                <button type="submit" class="auth-submit">Sign Up</button>
-            </form>
-        </div>
+  <!-- BOOK MODAL -->
+  <div id="book-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 id="book-modal-title">Book Details</h2>
+      <div id="book-modal-content"></div>
     </div>
+  </div>
 
+  <!-- AUTH MODAL -->
+  <div class="auth-modal" id="auth-modal" aria-hidden="true">
+    <div class="auth-modal-content">
+      <button class="close-auth-modal">&times;</button>
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active">Log In</button>
+        <button id="tab-signup" class="auth-tab">Sign Up</button>
+      </div>
 
+      <!-- LOGIN FORM -->
+      <form id="login-form" class="auth-form">
+        <h3>Welcome back</h3>
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit" class="auth-submit">Log In</button>
+      </form>
 
-    <!-- LOGIN PROTECTION SELECTOR -->
-    <script>
-        window.REQUIRES_LOGIN_SELECTORS = ".requires-login";
-    </script>
+      <!-- SIGNUP FORM -->
+      <form id="signup-form" class="auth-form">
+        <h3>Create an account</h3>
+        <input type="text" id="signup-name" placeholder="Full Name" required>
+        <input type="email" id="signup-email" placeholder="Email" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <button type="submit" class="auth-submit">Sign Up</button>
+      </form>
+    </div>
+  </div>
 
+  <!-- LOGIN PROTECTION -->
+  <script>window.REQUIRES_LOGIN_SELECTORS = ".requires-login";</script>
 
-    <!-- JS LIBRARIES -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+  <!-- GSAP Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
 
-    <!-- Initialize Firebase FIRST -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+  <!-- Initialize Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
-    authDomain: "biblio-social-3399.firebaseapp.com",
-    projectId: "biblio-social-3399",
-    storageBucket: "biblio-social-3399.appspot.com",  //
-    messagingSenderId: "1086617986269",
-    appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
-    measurementId: "G-CWPPWJ212R"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIPMMySoBInBFFaxSfRxZlv9A7LyC0muA",
+      authDomain: "biblio-social-3399.firebaseapp.com",
+      projectId: "biblio-social-3399",
+      storageBucket: "biblio-social-3399.appspot.com",
+      messagingSenderId: "1086617986269",
+      appId: "1:1086617986269:web:eadac3a1339c6c448ae734",
+      measurementId: "G-CWPPWJ212R"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  let analytics;
-try {
-  analytics = getAnalytics(app);
-} catch (err) {
-  console.warn("Analytics not available:", err.message);
-}
+    const app = initializeApp(firebaseConfig);
+    let analytics;
+    try {
+      analytics = getAnalytics(app);
+    } catch (err) {
+      console.warn("Analytics not available:", err.message);
+    }
 
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // Make Firebase objects available globally
-  window.auth = auth;
-  window.db = db;
-  window.firebaseApp = app;
-</script>
+    // Global exposure
+    window.firebaseApp = app;
+    window.auth = auth;
+    window.db = db;
+    window._firebaseAuthInstance = auth; //  needed for safe-auth.js
+  </script>
 
+  <!-- Add safe-auth and ensure main.js loads AFTER it -->
+  <script src="js/safe-auth.js"></script>
+  <script src="js/main.js"></script>
 
-<!-- Then load your other scripts -->
-<script src="js/main.js"></script>
-<script type="module" src="js/auth.js"></script>
-<script src="js/search.js"></script>
-<script src="js/home.js"></script>
-
-
-
-
-
-
+  <!-- Then load remaining scripts -->
+  <script type="module" src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>
+
 
 
 
